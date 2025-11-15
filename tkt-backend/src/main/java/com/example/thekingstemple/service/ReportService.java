@@ -2,6 +2,7 @@ package com.example.thekingstemple.service;
 
 import com.example.thekingstemple.dto.response.DailyReportResponse;
 import com.example.thekingstemple.dto.response.VisitResponse;
+import com.example.thekingstemple.entity.VehicleType;
 import com.example.thekingstemple.repository.VehicleRepository;
 import com.example.thekingstemple.repository.VisitRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,10 @@ public class ReportService {
         // Get total registered vehicles
         long totalRegisteredVehicles = vehicleRepository.findByActiveTrueOrderByCreatedAtDesc().size();
 
+        // Get total cars and bikes separately
+        long totalCars = vehicleRepository.findByVehicleTypeAndActiveTrueOrderByCreatedAtDesc(VehicleType.CAR).size();
+        long totalBikes = vehicleRepository.findByVehicleTypeAndActiveTrueOrderByCreatedAtDesc(VehicleType.BIKE).size();
+
         // Calculate unmarked count
         long unmarkedCount = totalRegisteredVehicles - totalArrivals;
 
@@ -46,6 +51,8 @@ public class ReportService {
                 .date(date)
                 .totalArrivals(totalArrivals)
                 .totalRegisteredVehicles(totalRegisteredVehicles)
+                .totalCars(totalCars)
+                .totalBikes(totalBikes)
                 .unmarkedCount(unmarkedCount)
                 .visits(visits)
                 .build();

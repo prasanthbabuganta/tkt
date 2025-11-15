@@ -16,6 +16,8 @@ public class DailyReportResponse {
     private LocalDate date;
     private long totalArrivals;
     private long totalRegisteredVehicles;
+    private long totalCars;
+    private long totalBikes;
     private long unmarkedCount;
     private List<VisitResponse> visits;
 }
