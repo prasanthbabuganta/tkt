@@ -56,7 +56,7 @@ const RegisterVehicleScreen = () => {
     }
   }, [error, dispatch]);
 
-  const pickImage = async (imageType) => {
+  const pickImageFromLibrary = async (imageType) => {
     try {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -92,6 +92,66 @@ const RegisterVehicleScreen = () => {
       Alert.alert('Error', 'Failed to pick image');
       console.error('Image picker error:', error);
     }
+  };
+
+  const takePhoto = async (imageType) => {
+    try {
+      const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+
+      if (permissionResult.granted === false) {
+        Alert.alert('Permission Required', 'Please allow access to your camera');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const selectedImage = result.assets[0];
+
+        // Validate file size (10MB limit)
+        const fileSize = selectedImage.fileSize || 0;
+        if (fileSize > 10 * 1024 * 1024) {
+          Alert.alert('File Too Large', 'Image size must be less than 10MB');
+          return;
+        }
+
+        if (imageType === 'car') {
+          setCarImage(selectedImage);
+        } else {
+          setKeyImage(selectedImage);
+        }
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to take photo');
+      console.error('Camera error:', error);
+    }
+  };
+
+  const pickImage = (imageType) => {
+    Alert.alert(
+      'Select Image',
+      'Choose an option to add an image',
+      [
+        {
+          text: 'Take Photo',
+          onPress: () => takePhoto(imageType),
+        },
+        {
+          text: 'Choose from Library',
+          onPress: () => pickImageFromLibrary(imageType),
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const validateForm = () => {
@@ -262,7 +322,7 @@ const RegisterVehicleScreen = () => {
               ) : (
                 <View style={styles.placeholderContainer}>
                   <Ionicons name="camera" size={32} color="#6B7280" />
-                  <Text style={styles.placeholderText}>Tap to select car image</Text>
+                  <Text style={styles.placeholderText}>Tap to take photo or select from library</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -289,7 +349,7 @@ const RegisterVehicleScreen = () => {
               ) : (
                 <View style={styles.placeholderContainer}>
                   <Ionicons name="key" size={32} color="#6B7280" />
-                  <Text style={styles.placeholderText}>Tap to select key image</Text>
+                  <Text style={styles.placeholderText}>Tap to take photo or select from library</Text>
                 </View>
               )}
             </TouchableOpacity>
