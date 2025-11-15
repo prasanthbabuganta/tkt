@@ -124,4 +124,36 @@ public class VehicleController {
         VehicleResponse vehicle = vehicleService.getVehicleByNumber(vehicleNumber);
         return ResponseEntity.ok(ApiResponse.success(vehicle));
     }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ResponseEntity<ApiResponse<VehicleResponse>> updateVehicle(
+            @PathVariable Long id,
+            @RequestParam("ownerName") @Size(min = 2, max = 100) String ownerName,
+            @RequestParam("ownerMobile") @Pattern(regexp = "^[0-9]{10}$") String ownerMobile,
+            @RequestParam("vehicleNumber") @Pattern(regexp = "^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{1,4}$") String vehicleNumber,
+            @RequestParam("vehicleType") VehicleType vehicleType,
+            @RequestParam(value = "carImage", required = false) MultipartFile carImage,
+            @RequestParam(value = "keyImage", required = false) MultipartFile keyImage,
+            @AuthenticationPrincipal Long userId
+    ) {
+        log.info("User {} updating vehicle ID: {}", userId, id);
+
+        // Create request object
+        CreateVehicleRequest request = new CreateVehicleRequest();
+        request.setOwnerName(ownerName);
+        request.setOwnerMobile(ownerMobile);
+        request.setVehicleNumber(vehicleNumber);
+        request.setVehicleType(vehicleType);
+
+        try {
+            VehicleResponse response = vehicleService.updateVehicleWithPhotos(id, request, carImage, keyImage, userId);
+            return ResponseEntity.ok(ApiResponse.success("Vehicle updated successfully", response));
+        } catch (IOException e) {
+            log.error("Error uploading vehicle images: {}", e.getMessage(), e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Failed to upload vehicle images"));
+        }
+    }
 }

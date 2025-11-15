@@ -38,6 +38,18 @@ export const registerVehicle = createAsyncThunk(
   }
 );
 
+export const updateVehicle = createAsyncThunk(
+  'vehicle/update',
+  async ({ vehicleId, vehicleData }, { rejectWithValue }) => {
+    try {
+      const response = await vehicleAPI.update(vehicleId, vehicleData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Update failed');
+    }
+  }
+);
+
 const vehicleSlice = createSlice({
   name: 'vehicle',
   initialState: {
@@ -97,6 +109,24 @@ const vehicleSlice = createSlice({
         state.vehicles.push(action.payload);
       })
       .addCase(registerVehicle.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Update vehicle
+      .addCase(updateVehicle.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.successMessage = null;
+      })
+      .addCase(updateVehicle.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage = 'Vehicle updated successfully';
+        const index = state.vehicles.findIndex(v => v.id === action.payload.id);
+        if (index !== -1) {
+          state.vehicles[index] = action.payload;
+        }
+      })
+      .addCase(updateVehicle.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

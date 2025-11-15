@@ -277,6 +277,145 @@ public class VehicleService {
     }
 
     /**
+     * Update vehicle details
+     */
+    @Transactional
+    public VehicleResponse updateVehicle(Long vehicleId, CreateVehicleRequest request, Long userId) {
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle", "id", vehicleId));
+
+        // If vehicle number is being changed, check for uniqueness
+        String normalizedVehicleNumber = request.getVehicleNumber().toUpperCase();
+        String newVehicleNumberHash = encryptionService.hash(normalizedVehicleNumber);
+
+        // Only check uniqueness if the vehicle number is actually changing
+        if (!newVehicleNumberHash.equals(vehicle.getVehicleNumberHash())) {
+            if (vehicleRepository.existsByVehicleNumberHash(newVehicleNumberHash)) {
+                throw new DuplicateResourceException("Vehicle", "vehicle number", normalizedVehicleNumber);
+            }
+        }
+
+        // Update fields
+        vehicle.setOwnerName(request.getOwnerName());
+
+        // Update mobile only if changed
+        String newOwnerMobileHash = encryptionService.hash(request.getOwnerMobile());
+        if (!newOwnerMobileHash.equals(vehicle.getOwnerMobileHash())) {
+            EncryptionService.EncryptedData encryptedOwnerMobile = encryptionService.encryptAndHash(request.getOwnerMobile());
+            vehicle.setOwnerMobile(encryptedOwnerMobile.encrypted());
+            vehicle.setOwnerMobileHash(encryptedOwnerMobile.hash());
+        }
+
+        // Update vehicle number only if changed
+        if (!newVehicleNumberHash.equals(vehicle.getVehicleNumberHash())) {
+            EncryptionService.EncryptedData encryptedVehicleNumber = encryptionService.encryptAndHash(normalizedVehicleNumber);
+            vehicle.setVehicleNumber(encryptedVehicleNumber.encrypted());
+            vehicle.setVehicleNumberHash(encryptedVehicleNumber.hash());
+        }
+
+        // Update vehicle type
+        vehicle.setVehicleType(request.getVehicleType());
+
+        Vehicle savedVehicle = vehicleRepository.save(vehicle);
+        log.info("Vehicle {} updated by user: {}", vehicleId, userId);
+
+        // Audit log
+        auditLogService.log(
+                userId,
+                "UPDATE_VEHICLE",
+                "VEHICLE",
+                vehicleId.toString(),
+                String.format("Updated vehicle: %s", normalizedVehicleNumber)
+        );
+
+        return mapToResponse(savedVehicle);
+    }
+
+    /**
+     * Update vehicle details with optional photos
+     */
+    @Transactional
+    public VehicleResponse updateVehicleWithPhotos(
+            Long vehicleId,
+            CreateVehicleRequest request,
+            MultipartFile carImage,
+            MultipartFile keyImage,
+            Long userId
+    ) throws IOException {
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle", "id", vehicleId));
+
+        // If vehicle number is being changed, check for uniqueness
+        String normalizedVehicleNumber = request.getVehicleNumber().toUpperCase();
+        String newVehicleNumberHash = encryptionService.hash(normalizedVehicleNumber);
+
+        // Only check uniqueness if the vehicle number is actually changing
+        if (!newVehicleNumberHash.equals(vehicle.getVehicleNumberHash())) {
+            if (vehicleRepository.existsByVehicleNumberHash(newVehicleNumberHash)) {
+                throw new DuplicateResourceException("Vehicle", "vehicle number", normalizedVehicleNumber);
+            }
+        }
+
+        // Update fields
+        vehicle.setOwnerName(request.getOwnerName());
+
+        // Update mobile only if changed
+        String newOwnerMobileHash = encryptionService.hash(request.getOwnerMobile());
+        if (!newOwnerMobileHash.equals(vehicle.getOwnerMobileHash())) {
+            EncryptionService.EncryptedData encryptedOwnerMobile = encryptionService.encryptAndHash(request.getOwnerMobile());
+            vehicle.setOwnerMobile(encryptedOwnerMobile.encrypted());
+            vehicle.setOwnerMobileHash(encryptedOwnerMobile.hash());
+        }
+
+        // Update vehicle number only if changed
+        if (!newVehicleNumberHash.equals(vehicle.getVehicleNumberHash())) {
+            EncryptionService.EncryptedData encryptedVehicleNumber = encryptionService.encryptAndHash(normalizedVehicleNumber);
+            vehicle.setVehicleNumber(encryptedVehicleNumber.encrypted());
+            vehicle.setVehicleNumberHash(encryptedVehicleNumber.hash());
+        }
+
+        // Update vehicle type
+        vehicle.setVehicleType(request.getVehicleType());
+
+        // Handle image updates
+        if (carImage != null && !carImage.isEmpty()) {
+            // Delete old image if exists
+            if (vehicle.getCarImageUrl() != null) {
+                storageService.deleteFile(vehicle.getCarImageUrl());
+            }
+            // Upload new image
+            String newCarImageUrl = storageService.uploadFile(carImage, "vehicles/car");
+            vehicle.setCarImageUrl(newCarImageUrl);
+            log.info("Car image updated for vehicle ID: {}", vehicleId);
+        }
+
+        if (keyImage != null && !keyImage.isEmpty()) {
+            // Delete old image if exists
+            if (vehicle.getKeyImageUrl() != null) {
+                storageService.deleteFile(vehicle.getKeyImageUrl());
+            }
+            // Upload new image
+            String newKeyImageUrl = storageService.uploadFile(keyImage, "vehicles/key");
+            vehicle.setKeyImageUrl(newKeyImageUrl);
+            log.info("Key image updated for vehicle ID: {}", vehicleId);
+        }
+
+        Vehicle savedVehicle = vehicleRepository.save(vehicle);
+        log.info("Vehicle {} updated by user: {}", vehicleId, userId);
+
+        // Audit log
+        auditLogService.log(
+                userId,
+                "UPDATE_VEHICLE",
+                "VEHICLE",
+                vehicleId.toString(),
+                String.format("Updated vehicle: %s", normalizedVehicleNumber)
+        );
+
+        return mapToResponse(savedVehicle);
+    }
+
+    /**
      * Map Vehicle entity to VehicleResponse DTO
      */
     private VehicleResponse mapToResponse(Vehicle vehicle) {

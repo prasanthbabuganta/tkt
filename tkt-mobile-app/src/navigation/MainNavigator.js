@@ -10,6 +10,7 @@ import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import RegisterVehicleScreen from '../screens/RegisterVehicleScreen';
+import EditVehicleScreen from '../screens/EditVehicleScreen';
 import AttendanceScreen from '../screens/AttendanceScreen';
 import AllVehiclesScreen from '../screens/AllVehiclesScreen';
 import MoreScreen from '../screens/MoreScreen';
@@ -96,6 +97,7 @@ const MainNavigator = () => {
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="MainTabs" component={MainTabs} />
         <Stack.Screen name="AllVehicles" component={AllVehiclesScreen} />
+        <Stack.Screen name="EditVehicle" component={EditVehicleScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -99,11 +99,6 @@ const LoginScreen = ({ navigation }) => {
               <Text style={styles.loginButtonText}>Login</Text>
             )}
           </TouchableOpacity>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Default Admin</Text>
-            <Text style={styles.footerSubtext}>Mobile: 9133733197 | PIN: 777777</Text>
-          </View>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -168,19 +163,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
-  },
-  footer: {
-    marginTop: 40,
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginBottom: 4,
-  },
-  footerSubtext: {
-    fontSize: 11,
-    color: '#9CA3AF',
   },
 });
 

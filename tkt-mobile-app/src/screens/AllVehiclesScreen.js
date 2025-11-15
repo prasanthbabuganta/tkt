@@ -73,6 +73,13 @@ const AllVehiclesScreen = ({ navigation }) => {
           Registered: {new Date(item.createdAt).toLocaleDateString('en-IN')}
         </Text>
       </View>
+      <TouchableOpacity
+        style={styles.editButton}
+        onPress={() => navigation.navigate('EditVehicle', { vehicle: item })}
+      >
+        <Ionicons name="create-outline" size={16} color="#FFFFFF" style={{ marginRight: 4 }} />
+        <Text style={styles.editButtonText}>Edit</Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -318,10 +325,25 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
+    marginBottom: 12,
   },
   registeredDateText: {
     fontSize: 12,
     color: '#9CA3AF',
+  },
+  editButton: {
+    backgroundColor: '#2B2B2B',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  editButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
   emptyContainer: {
     flex: 1,
