@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: tkt-postgres
+    environment:
+      POSTGRES_DB: tkt
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      TZ: Asia/Kolkata
+      PGTZ: Asia/Kolkata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tkt-network
+    restart: unless-stopped
+
+  # Spring Boot Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tkt-backend
+    environment:
+      # Spring Profile
+      SPRING_PROFILES_ACTIVE: dev
+
+      # Timezone
+      TZ: Asia/Kolkata
+
+      # Database Configuration
+      DB_URL: jdbc:postgresql://postgres:5432/tkt
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+
+      # JWT Configuration (Development - Change for production)
+      JWT_SECRET: DevJWTSecretKeyForLocalDevelopmentOnly123456789012345678901234567890
+      JWT_ACCESS_TOKEN_EXPIRY: 2592000000
+      JWT_REFRESH_TOKEN_EXPIRY: 5184000000
+
+      # Encryption Key (Development - Change for production)
+      ENCRYPTION_SECRET_KEY: 12345678901234567890123456789012
+
+      # Admin Seed Credentials (Development)
+      ADMIN_SEED_MOBILE: 9133733197
+      ADMIN_SEED_PIN: 777777
+
+      # Server Configuration
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tkt-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # pgAdmin (Optional - for database management UI)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: tkt-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@tkt.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      TZ: Asia/Kolkata
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - tkt-network
+    restart: unless-stopped
+    profiles:
+      - with-pgadmin
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  tkt-network:
+    driver: bridge

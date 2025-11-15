@@ -1,0 +1,102 @@
+# ================================================================
+# TKT Backend - Google Cloud Build Configuration
+# Region: asia-south1 (Mumbai, India)
+# Trigger: Push to main branch
+# ================================================================
+
+steps:
+  # Step 1: Build JAR file (tests are skipped as they require database)
+  - name: 'maven:3.9-eclipse-temurin-21-alpine'
+    id: 'build'
+    entrypoint: 'mvn'
+    args: ['clean', 'package', '-DskipTests', '-B']
+    dir: '.'
+
+  # Step 2: Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'docker-build'
+    args:
+      - 'build'
+      - '-t'
+      - 'asia-south1-docker.pkg.dev/$PROJECT_ID/tkt-backend/app:$BUILD_ID'
+      - '-t'
+      - 'asia-south1-docker.pkg.dev/$PROJECT_ID/tkt-backend/app:latest'
+      - '--build-arg'
+      - 'BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")'
+      - '--build-arg'
+      - 'VCS_REF=$BUILD_ID'
+      - '.'
+    dir: '.'
+    waitFor: ['build']
+
+  # Step 4: Push Docker image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'docker-push'
+    args:
+      - 'push'
+      - '--all-tags'
+      - 'asia-south1-docker.pkg.dev/$PROJECT_ID/tkt-backend/app'
+    waitFor: ['docker-build']
+
+  # Step 5: Deploy to Cloud Run (Production - main branch only)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-prod'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'tkt-backend'
+      - '--image=asia-south1-docker.pkg.dev/$PROJECT_ID/tkt-backend/app:$BUILD_ID'
+      - '--region=asia-south1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars=SPRING_PROFILES_ACTIVE=prod,TZ=Asia/Kolkata,DDL_AUTO=validate,DB_URL=jdbc:postgresql:///tkt?cloudSqlInstance=tkt-backend:asia-south1:tkt-postgres&socketFactory=com.google.cloud.sql.postgres.SocketFactory,DB_USERNAME=postgres'
+      - '--set-secrets=JWT_SECRET=jwt-secret:latest,ENCRYPTION_SECRET_KEY=encryption-key:latest,DB_PASSWORD=db-password:latest,ADMIN_SEED_MOBILE=admin-seed-mobile:latest,ADMIN_SEED_PIN=admin-seed-pin:latest'
+      - '--add-cloudsql-instances=tkt-backend:asia-south1:tkt-postgres'
+      - '--vpc-connector=tkt-connector'
+      - '--vpc-egress=private-ranges-only'
+      - '--cpu=1'
+      - '--memory=512Mi'
+      - '--min-instances=1'
+      - '--max-instances=10'
+      - '--timeout=300'
+      - '--concurrency=80'
+    waitFor: ['docker-push']
+
+  # Step 6: Verify deployment
+  - name: 'gcr.io/cloud-builders/curl'
+    id: 'verify'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        SERVICE_URL=$(gcloud run services describe tkt-backend --region=asia-south1 --format='value(status.url)')
+        sleep 15
+        curl -f $$SERVICE_URL/api/actuator/health || exit 1
+        echo "Deployment verification successful!"
+    waitFor: ['deploy-prod']
+
+# Build options
+options:
+  # Use faster machine type for builds
+  machineType: 'E2_HIGHCPU_8'
+
+  # Store logs in Cloud Logging
+  logging: CLOUD_LOGGING_ONLY
+
+# Store build artifacts
+artifacts:
+  objects:
+    location: 'gs://$PROJECT_ID-builds'
+    paths:
+      - 'target/*.jar'
+
+# Timeout for entire build
+timeout: '1200s'
+
+# Tags for build tracking
+tags:
+  - 'tkt-backend'
+  - 'cloud-run'
+  - 'asia-south1'
+  - 'spring-boot'
