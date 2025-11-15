@@ -12,18 +12,14 @@ import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import RegisterVehicleScreen from '../screens/RegisterVehicleScreen';
 import AttendanceScreen from '../screens/AttendanceScreen';
-import HistoryScreen from '../screens/HistoryScreen';
-import UserManagementScreen from '../screens/UserManagementScreen';
 import AllVehiclesScreen from '../screens/AllVehiclesScreen';
-import ProfileScreen from '../screens/ProfileScreen';
+import MoreScreen from '../screens/MoreScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 // Bottom Tab Navigator
 const MainTabs = () => {
-  const user = useSelector((state) => state.auth.user);
-  const isAdmin = user?.role === 'ADMIN';
   const insets = useSafeAreaInsets();
 
   return (
@@ -39,12 +35,8 @@ const MainTabs = () => {
             iconName = focused ? 'add-circle' : 'add-circle-outline';
           } else if (route.name === 'Attendance') {
             iconName = focused ? 'checkmark-circle' : 'checkmark-circle-outline';
-          } else if (route.name === 'History') {
-            iconName = focused ? 'calendar' : 'calendar-outline';
-          } else if (route.name === 'Users') {
-            iconName = focused ? 'people' : 'people-outline';
-          } else if (route.name === 'Profile') {
-            iconName = focused ? 'person' : 'person-outline';
+          } else if (route.name === 'More') {
+            iconName = focused ? 'grid' : 'grid-outline';
           }
 
           return <Ionicons name={iconName} size={focused ? 28 : 24} color={color} />;
@@ -88,21 +80,9 @@ const MainTabs = () => {
         options={{ title: 'Attendance' }}
       />
       <Tab.Screen
-        name="History"
-        component={HistoryScreen}
-        options={{ title: 'History' }}
-      />
-      {isAdmin && (
-        <Tab.Screen
-          name="Users"
-          component={UserManagementScreen}
-          options={{ title: 'Users' }}
-        />
-      )}
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{ title: 'Profile' }}
+        name="More"
+        component={MoreScreen}
+        options={{ title: 'More' }}
       />
     </Tab.Navigator>
   );

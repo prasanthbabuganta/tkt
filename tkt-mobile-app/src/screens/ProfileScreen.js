@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../slices/authSlice';
 import { Ionicons } from '@expo/vector-icons';
 
-const ProfileScreen = () => {
+const ProfileScreen = ({ hideHeader = false }) => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
 
@@ -39,17 +39,19 @@ const ProfileScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#2B2B2B" />
+      {!hideHeader && <StatusBar barStyle="light-content" backgroundColor="#2B2B2B" />}
 
       {/* Header */}
-      <View style={styles.header}>
-        <Image
-          source={require('../../assets/images/logo.png')}
-          style={styles.headerLogo}
-          resizeMode="contain"
-        />
-        <Text style={styles.headerTitle}>Profile</Text>
-      </View>
+      {!hideHeader && (
+        <View style={styles.header}>
+          <Image
+            source={require('../../assets/images/logo.png')}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+          <Text style={styles.headerTitle}>Profile</Text>
+        </View>
+      )}
 
       {/* Profile Info Card */}
       <View style={styles.profileCard}>

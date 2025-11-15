@@ -14,7 +14,7 @@ import { reportsAPI } from '../services/api';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-const HistoryScreen = () => {
+const HistoryScreen = ({ hideHeader = false }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [reportData, setReportData] = useState(null);
@@ -106,11 +106,13 @@ const HistoryScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#2B2B2B" />
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Daily History</Text>
-        <Text style={styles.headerSubtitle}>View attendance records</Text>
-      </View>
+      {!hideHeader && <StatusBar barStyle="light-content" backgroundColor="#2B2B2B" />}
+      {!hideHeader && (
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Daily History</Text>
+          <Text style={styles.headerSubtitle}>View attendance records</Text>
+        </View>
+      )}
 
       {/* Date Selector */}
       <View style={styles.dateSelector}>

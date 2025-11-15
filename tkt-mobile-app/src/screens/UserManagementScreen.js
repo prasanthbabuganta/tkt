@@ -15,7 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { userAPI } from '../services/api';
 
-const UserManagementScreen = () => {
+const UserManagementScreen = ({ hideHeader = false }) => {
   const [mobileNumber, setMobileNumber] = useState('');
   const [pin, setPin] = useState('');
   const [role, setRole] = useState('STAFF');
@@ -85,12 +85,14 @@ const UserManagementScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <StatusBar barStyle="light-content" backgroundColor="#2B2B2B" />
+      {!hideHeader && <StatusBar barStyle="light-content" backgroundColor="#2B2B2B" />}
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>User Management</Text>
-          <Text style={styles.headerSubtitle}>Create new staff or admin users</Text>
-        </View>
+        {!hideHeader && (
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>User Management</Text>
+            <Text style={styles.headerSubtitle}>Create new staff or admin users</Text>
+          </View>
+        )}
 
         <View style={styles.form}>
           {/* Mobile Number */}
