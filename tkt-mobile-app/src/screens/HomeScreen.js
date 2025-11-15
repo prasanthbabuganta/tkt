@@ -10,10 +10,12 @@ import {
   RefreshControl,
   StatusBar,
   Image,
+  Alert,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFocusEffect } from '@react-navigation/native';
 import { searchVehicles, clearSearchResults } from '../slices/vehicleSlice';
+import { markArrival } from '../slices/attendanceSlice';
 import { reportsAPI } from '../services/api';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -22,6 +24,7 @@ const HomeScreen = ({ navigation }) => {
   const [todayStats, setTodayStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [markingAttendance, setMarkingAttendance] = useState(null);
   const dispatch = useDispatch();
   const { searchResults } = useSelector((state) => state.vehicle);
 
@@ -62,6 +65,35 @@ const HomeScreen = ({ navigation }) => {
     setRefreshing(false);
   };
 
+  const handleMarkAttendance = (vehicleNumber) => {
+    Alert.alert(
+      'Mark Attendance',
+      `Are you sure you want to mark arrival for ${vehicleNumber}?`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Mark Arrival',
+          onPress: async () => {
+            setMarkingAttendance(vehicleNumber);
+            try {
+              await dispatch(markArrival(vehicleNumber)).unwrap();
+              Alert.alert('Success', 'Attendance marked successfully!');
+              // Refresh stats to update the counts
+              await fetchTodayStats();
+            } catch (error) {
+              Alert.alert('Error', error?.message || 'Failed to mark attendance');
+            } finally {
+              setMarkingAttendance(null);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const renderVehicleItem = ({ item }) => (
     <View style={styles.vehicleCard}>
       <View style={styles.vehicleHeader}>
@@ -98,6 +130,26 @@ const HomeScreen = ({ navigation }) => {
           )}
         </View>
       )}
+
+      {/* Mark Attendance Button */}
+      <TouchableOpacity
+        style={[
+          styles.markAttendanceButton,
+          markingAttendance === item.vehicleNumber && styles.markAttendanceButtonDisabled,
+        ]}
+        onPress={() => handleMarkAttendance(item.vehicleNumber)}
+        disabled={markingAttendance === item.vehicleNumber}
+        activeOpacity={0.8}
+      >
+        {markingAttendance === item.vehicleNumber ? (
+          <ActivityIndicator color="#FFFFFF" size="small" />
+        ) : (
+          <>
+            <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
+            <Text style={styles.markAttendanceButtonText}>Mark Attendance</Text>
+          </>
+        )}
+      </TouchableOpacity>
     </View>
   );
 
@@ -363,6 +415,30 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 8,
     backgroundColor: '#F3F4F6',
+  },
+  markAttendanceButton: {
+    backgroundColor: '#10B981',
+    borderRadius: 8,
+    paddingVertical: 14,
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  markAttendanceButtonDisabled: {
+    backgroundColor: '#9CA3AF',
+  },
+  markAttendanceButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
   },
 });
 
