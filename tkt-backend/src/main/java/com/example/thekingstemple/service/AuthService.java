@@ -14,8 +14,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 /**
- * Service for authentication (login, token refresh)
+ * Service for authentication (login, token refresh, logout)
  */
 @Service
 @RequiredArgsConstructor
@@ -27,6 +29,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuditLogService auditLogService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Value("${jwt.access-token-expiry}")
     private long accessTokenExpiry;
@@ -121,5 +124,31 @@ public class AuthService {
                         .role(user.getRole())
                         .build())
                 .build();
+    }
+
+    /**
+     * Logout - blacklist both access and refresh tokens
+     */
+    @Transactional
+    public void logout(String accessToken, String refreshToken) {
+        // Validate and blacklist access token
+        if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
+            LocalDateTime accessTokenExpiry = jwtTokenProvider.getExpirationFromToken(accessToken);
+            tokenBlacklistService.blacklistToken(accessToken, accessTokenExpiry, "LOGOUT");
+
+            // Get user ID for audit log
+            Long userId = jwtTokenProvider.getUserIdFromToken(accessToken);
+
+            // Audit log
+            auditLogService.log(userId, "LOGOUT");
+
+            log.info("User logged out: {}", userId);
+        }
+
+        // Validate and blacklist refresh token
+        if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken)) {
+            LocalDateTime refreshTokenExpiry = jwtTokenProvider.getExpirationFromToken(refreshToken);
+            tokenBlacklistService.blacklistToken(refreshToken, refreshTokenExpiry, "LOGOUT");
+        }
     }
 }

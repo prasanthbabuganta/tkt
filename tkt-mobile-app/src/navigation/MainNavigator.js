@@ -15,6 +15,7 @@ import AttendanceScreen from '../screens/AttendanceScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import UserManagementScreen from '../screens/UserManagementScreen';
 import AllVehiclesScreen from '../screens/AllVehiclesScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -42,6 +43,8 @@ const MainTabs = () => {
             iconName = focused ? 'calendar' : 'calendar-outline';
           } else if (route.name === 'Users') {
             iconName = focused ? 'people' : 'people-outline';
+          } else if (route.name === 'Profile') {
+            iconName = focused ? 'person' : 'person-outline';
           }
 
           return <Ionicons name={iconName} size={focused ? 28 : 24} color={color} />;
@@ -96,6 +99,11 @@ const MainTabs = () => {
           options={{ title: 'Users' }}
         />
       )}
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{ title: 'Profile' }}
+      />
     </Tab.Navigator>
   );
 };

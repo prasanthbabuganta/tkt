@@ -1,6 +1,7 @@
 package com.example.thekingstemple.security;
 
 import com.example.thekingstemple.entity.Role;
+import com.example.thekingstemple.service.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,6 +29,7 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Override
     protected void doFilterInternal(
@@ -38,22 +40,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
-            if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
-                // Only process access tokens for authentication
-                if (jwtTokenProvider.isAccessToken(jwt)) {
-                    Long userId = jwtTokenProvider.getUserIdFromToken(jwt);
-                    Role role = jwtTokenProvider.getRoleFromToken(jwt);
+            if (StringUtils.hasText(jwt)) {
+                // Check if token is blacklisted
+                if (tokenBlacklistService.isTokenBlacklisted(jwt)) {
+                    log.debug("Token is blacklisted, rejecting request");
+                    filterChain.doFilter(request, response);
+                    return;
+                }
 
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userId,
-                            null,
-                            Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()))
-                    );
+                // Validate token
+                if (jwtTokenProvider.validateToken(jwt)) {
+                    // Only process access tokens for authentication
+                    if (jwtTokenProvider.isAccessToken(jwt)) {
+                        Long userId = jwtTokenProvider.getUserIdFromToken(jwt);
+                        Role role = jwtTokenProvider.getRoleFromToken(jwt);
 
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                userId,
+                                null,
+                                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()))
+                        );
 
-                    log.debug("Set authentication for user: {}, role: {}", userId, role);
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                        log.debug("Set authentication for user: {}, role: {}", userId, role);
+                    }
                 }
             }
         } catch (Exception e) {

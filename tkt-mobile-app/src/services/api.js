@@ -88,6 +88,11 @@ export const authAPI = {
     const response = await api.post('/auth/refresh', { refreshToken });
     return response.data; // Returns ApiResponse wrapper
   },
+
+  logout: async (refreshToken) => {
+    const response = await api.post('/auth/logout', { refreshToken });
+    return response.data; // Returns ApiResponse wrapper
+  },
 };
 
 // Vehicle API calls
