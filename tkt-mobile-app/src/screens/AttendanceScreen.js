@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   FlatList,
   TouchableOpacity,
@@ -25,6 +26,7 @@ const AttendanceScreen = () => {
     (state) => state.attendance
   );
   const [refreshing, setRefreshing] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState('');
 
   useEffect(() => {
     dispatch(fetchUnmarkedVehicles());
@@ -43,6 +45,10 @@ const AttendanceScreen = () => {
       dispatch(clearError());
     }
   }, [error, dispatch]);
+
+  useEffect(() => {
+    console.log('Unmarked vehicles updated:', unmarkedVehicles.length, unmarkedVehicles);
+  }, [unmarkedVehicles]);
 
   const handleMarkArrival = (vehicleNumber) => {
     Alert.alert(
@@ -63,6 +69,28 @@ const AttendanceScreen = () => {
     await dispatch(fetchUnmarkedVehicles());
     setRefreshing(false);
   };
+
+  // Filter vehicles based on search query
+  const filteredVehicles = useMemo(() => {
+    if (!searchQuery.trim()) {
+      console.log('No search query, showing all unmarked vehicles:', unmarkedVehicles.length);
+      return unmarkedVehicles;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = unmarkedVehicles.filter(vehicle => {
+      const vehicleNumber = (vehicle.vehicleNumber || '').toLowerCase();
+      const ownerName = (vehicle.ownerName || '').toLowerCase();
+      const ownerMobile = (vehicle.ownerMobile || '');
+
+      return vehicleNumber.includes(query) ||
+        ownerName.includes(query) ||
+        ownerMobile.includes(query);
+    });
+    console.log(`Search query: "${searchQuery}", Found ${filtered.length} vehicles out of ${unmarkedVehicles.length}`,
+      filtered.map(v => v.vehicleNumber));
+    return filtered;
+  }, [unmarkedVehicles, searchQuery]);
 
   const renderVehicleItem = ({ item }) => (
     <View style={styles.vehicleCard}>
@@ -95,15 +123,36 @@ const AttendanceScreen = () => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Mark Attendance</Text>
         <Text style={styles.headerSubtitle}>
-          {unmarkedVehicles.length} vehicle{unmarkedVehicles.length !== 1 ? 's' : ''} pending
+          {searchQuery ? (
+            `${filteredVehicles.length} of ${unmarkedVehicles.length} vehicle${unmarkedVehicles.length !== 1 ? 's' : ''}`
+          ) : (
+            `${unmarkedVehicles.length} vehicle${unmarkedVehicles.length !== 1 ? 's' : ''} pending`
+          )}
         </Text>
+      </View>
+
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color="#6B7280" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search by vehicle number, owner name or mobile..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          autoCapitalize="characters"
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <Ionicons name="close-circle" size={20} color="#6B7280" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {loading && unmarkedVehicles.length === 0 ? (
         <ActivityIndicator size="large" color="#2B2B2B" style={styles.loader} />
       ) : (
         <FlatList
-          data={unmarkedVehicles}
+          data={filteredVehicles}
           renderItem={renderVehicleItem}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContainer}
@@ -111,9 +160,13 @@ const AttendanceScreen = () => {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="checkmark-done-circle" size={64} color="#10B981" />
-              <Text style={styles.emptyTitle}>All Done!</Text>
+              <Text style={styles.emptyTitle}>
+                {searchQuery ? 'No Results' : 'All Done!'}
+              </Text>
               <Text style={styles.emptyText}>
-                All vehicles have been marked for today
+                {searchQuery
+                  ? 'No vehicles found matching your search'
+                  : 'All vehicles have been marked for today'}
               </Text>
             </View>
           }
@@ -150,6 +203,29 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: 14,
     color: '#FFFFFF',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginVertical: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  searchIcon: {
+    marginRight: 12,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#2B2B2B',
   },
   listContainer: {
     padding: 16,

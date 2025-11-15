@@ -50,13 +50,16 @@ const UserManagementScreen = ({ hideHeader = false }) => {
 
     setLoading(true);
     try {
+      console.log('Creating user:', { mobileNumber, role });
       const response = await userAPI.create({
         mobileNumber,
         pin,
         role,
       });
 
-      if (response.success) {
+      console.log('Create user response:', response);
+
+      if (response && response.success) {
         Alert.alert('Success', `${role} user created successfully`, [
           {
             text: 'OK',
@@ -68,8 +71,14 @@ const UserManagementScreen = ({ hideHeader = false }) => {
             },
           },
         ]);
+      } else {
+        // Handle case where API returns 200 but success is false
+        const errorMessage = response?.message || 'Failed to create user. Please try again.';
+        console.error('Create user failed:', errorMessage);
+        Alert.alert('Error', errorMessage);
       }
     } catch (error) {
+      console.error('Create user error:', error);
       const errorMessage =
         error.response?.data?.message ||
         error.message ||

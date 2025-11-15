@@ -171,27 +171,41 @@ const HomeScreen = ({ navigation }) => {
       {loading && !todayStats ? (
         <ActivityIndicator size="large" color="#2B2B2B" style={styles.loader} />
       ) : todayStats ? (
-        <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
-            <Ionicons name="checkmark-circle" size={32} color="#10B981" />
-            <Text style={styles.statNumber}>{todayStats.totalArrivals}</Text>
-            <Text style={styles.statLabel}>Today's Arrivals</Text>
+        <View style={styles.statsOuterContainer}>
+          <View style={styles.statsRow}>
+            <View style={styles.statCard}>
+              <Ionicons name="checkmark-circle" size={32} color="#10B981" />
+              <Text style={styles.statNumber}>{todayStats.totalArrivals}</Text>
+              <Text style={styles.statLabel}>Today's Arrivals</Text>
+            </View>
+
+            <View style={styles.statCard}>
+              <Ionicons name="time" size={32} color="#F59E0B" />
+              <Text style={styles.statNumber}>{todayStats.unmarkedCount}</Text>
+              <Text style={styles.statLabel}>Pending</Text>
+            </View>
           </View>
 
-          <TouchableOpacity
-            style={styles.statCard}
-            onPress={() => navigation.navigate('AllVehicles')}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="car" size={32} color="#2B2B2B" />
-            <Text style={styles.statNumber}>{todayStats.totalRegisteredVehicles}</Text>
-            <Text style={styles.statLabel}>Total Vehicles</Text>
-          </TouchableOpacity>
+          <View style={styles.statsRow}>
+            <TouchableOpacity
+              style={styles.statCard}
+              onPress={() => navigation.navigate('AllVehicles')}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="car" size={32} color="#3B82F6" />
+              <Text style={styles.statNumber}>{todayStats.totalCars}</Text>
+              <Text style={styles.statLabel}>Cars</Text>
+            </TouchableOpacity>
 
-          <View style={styles.statCard}>
-            <Ionicons name="time" size={32} color="#F59E0B" />
-            <Text style={styles.statNumber}>{todayStats.unmarkedCount}</Text>
-            <Text style={styles.statLabel}>Pending</Text>
+            <TouchableOpacity
+              style={styles.statCard}
+              onPress={() => navigation.navigate('AllVehicles')}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="bicycle" size={32} color="#F59E0B" />
+              <Text style={styles.statNumber}>{todayStats.totalBikes}</Text>
+              <Text style={styles.statLabel}>Bikes</Text>
+            </TouchableOpacity>
           </View>
         </View>
       ) : null}
@@ -274,11 +288,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#FFFFFF',
   },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  statsOuterContainer: {
     padding: 16,
     marginTop: -20,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
   statCard: {
     backgroundColor: '#FFFFFF',

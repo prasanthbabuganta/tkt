@@ -9,11 +9,13 @@ import {
   Image,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 import { logout } from '../slices/authSlice';
 import { Ionicons } from '@expo/vector-icons';
 
 const ProfileScreen = ({ hideHeader = false }) => {
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const { user } = useSelector((state) => state.auth);
 
   const handleLogout = () => {
@@ -28,8 +30,13 @@ const ProfileScreen = ({ hideHeader = false }) => {
         {
           text: 'Logout',
           style: 'destructive',
-          onPress: () => {
-            dispatch(logout());
+          onPress: async () => {
+            await dispatch(logout());
+            // Navigate to Login screen and reset the navigation stack
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Login' }],
+            });
           },
         },
       ],
