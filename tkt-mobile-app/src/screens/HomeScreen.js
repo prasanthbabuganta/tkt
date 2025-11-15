@@ -72,6 +72,32 @@ const HomeScreen = ({ navigation }) => {
       </View>
       <Text style={styles.ownerName}>{item.ownerName}</Text>
       <Text style={styles.ownerMobile}>{item.ownerMobile}</Text>
+
+      {/* Car and Key Images */}
+      {(item.carImageUrl || item.keyImageUrl) && (
+        <View style={styles.imagesContainer}>
+          {item.carImageUrl && (
+            <View style={styles.imageWrapper}>
+              <Text style={styles.imageLabel}>Car Image</Text>
+              <Image
+                source={{ uri: item.carImageUrl }}
+                style={styles.vehicleImage}
+                resizeMode="cover"
+              />
+            </View>
+          )}
+          {item.keyImageUrl && (
+            <View style={styles.imageWrapper}>
+              <Text style={styles.imageLabel}>Key Image</Text>
+              <Image
+                source={{ uri: item.keyImageUrl }}
+                style={styles.vehicleImage}
+                resizeMode="cover"
+              />
+            </View>
+          )}
+        </View>
+      )}
     </View>
   );
 
@@ -316,6 +342,27 @@ const styles = StyleSheet.create({
   },
   loader: {
     marginTop: 40,
+  },
+  imagesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+    gap: 8,
+  },
+  imageWrapper: {
+    flex: 1,
+  },
+  imageLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 6,
+  },
+  vehicleImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 8,
+    backgroundColor: '#F3F4F6',
   },
 });
 
