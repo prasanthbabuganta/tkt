@@ -26,10 +26,29 @@ export const login = createAsyncThunk(
 );
 
 // Async thunk for logout
-export const logout = createAsyncThunk('auth/logout', async () => {
-  await SecureStore.deleteItemAsync('accessToken');
-  await SecureStore.deleteItemAsync('refreshToken');
-  await SecureStore.deleteItemAsync('user');
+export const logout = createAsyncThunk('auth/logout', async (_, { rejectWithValue }) => {
+  try {
+    // Get refresh token to send to backend
+    const refreshToken = await SecureStore.getItemAsync('refreshToken');
+
+    // Call backend logout API (access token is automatically added by interceptor)
+    if (refreshToken) {
+      await authAPI.logout(refreshToken);
+    }
+
+    // Clear local tokens
+    await SecureStore.deleteItemAsync('accessToken');
+    await SecureStore.deleteItemAsync('refreshToken');
+    await SecureStore.deleteItemAsync('user');
+  } catch (error) {
+    // Even if backend call fails, still clear local tokens
+    await SecureStore.deleteItemAsync('accessToken');
+    await SecureStore.deleteItemAsync('refreshToken');
+    await SecureStore.deleteItemAsync('user');
+
+    // Don't reject - we still want to log the user out locally
+    console.error('Logout error:', error);
+  }
 });
 
 // Async thunk to restore session

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 /**
@@ -152,6 +154,27 @@ public class JwtTokenProvider {
             return "REFRESH".equals(claims.get("type", String.class));
         } catch (JwtException e) {
             return false;
+        }
+    }
+
+    /**
+     * Get expiration time from token
+     */
+    public LocalDateTime getExpirationFromToken(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            Date expiration = claims.getExpiration();
+            return expiration.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+        } catch (JwtException e) {
+            log.error("Could not extract expiration from token: {}", e.getMessage());
+            return LocalDateTime.now();
         }
     }
 }
