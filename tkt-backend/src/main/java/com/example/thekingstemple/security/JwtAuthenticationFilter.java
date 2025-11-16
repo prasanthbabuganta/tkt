@@ -2,6 +2,7 @@ package com.example.thekingstemple.security;
 
 import com.example.thekingstemple.entity.Role;
 import com.example.thekingstemple.service.TokenBlacklistService;
+import com.example.thekingstemple.util.TenantContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,6 +55,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     if (jwtTokenProvider.isAccessToken(jwt)) {
                         Long userId = jwtTokenProvider.getUserIdFromToken(jwt);
                         Role role = jwtTokenProvider.getRoleFromToken(jwt);
+                        String tenantId = jwtTokenProvider.getTenantIdFromToken(jwt);
+
+                        // Set tenant context for schema-based multitenancy
+                        if (tenantId != null) {
+                            TenantContext.setTenantId(tenantId);
+                            log.debug("Set tenant context: {}", tenantId);
+                        }
 
                         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                                 userId,
@@ -64,7 +72,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                        log.debug("Set authentication for user: {}, role: {}", userId, role);
+                        log.debug("Set authentication for user: {}, role: {}, tenant: {}", userId, role, tenantId);
                     }
                 }
             }
@@ -72,7 +80,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.error("Could not set user authentication in security context", e);
         }
 
-        filterChain.doFilter(request, response);
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            // Clear tenant context after request is processed
+            TenantContext.clear();
+        }
     }
 
     /**

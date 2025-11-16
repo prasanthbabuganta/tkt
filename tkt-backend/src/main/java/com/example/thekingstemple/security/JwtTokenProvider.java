@@ -37,7 +37,7 @@ public class JwtTokenProvider {
     /**
      * Generate access token
      */
-    public String generateAccessToken(Long userId, String mobileHash, Role role) {
+    public String generateAccessToken(Long userId, String mobileHash, Role role, String tenantId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + accessTokenExpiry);
 
@@ -45,6 +45,7 @@ public class JwtTokenProvider {
                 .subject(userId.toString())
                 .claim("mobileHash", mobileHash)
                 .claim("role", role.name())
+                .claim("tenantId", tenantId)
                 .claim("type", "ACCESS")
                 .issuedAt(now)
                 .expiration(expiryDate)
@@ -105,6 +106,19 @@ public class JwtTokenProvider {
                 .getPayload();
 
         return claims.get("mobileHash", String.class);
+    }
+
+    /**
+     * Get tenant ID from token
+     */
+    public String getTenantIdFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.get("tenantId", String.class);
     }
 
     /**
