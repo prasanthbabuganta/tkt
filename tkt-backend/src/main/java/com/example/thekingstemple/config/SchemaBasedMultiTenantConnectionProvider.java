@@ -10,7 +10,10 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Provides database connections with the appropriate schema set for each tenant
@@ -21,6 +24,11 @@ public class SchemaBasedMultiTenantConnectionProvider implements MultiTenantConn
 
     private static final long serialVersionUID = 1L;
     private static final String DEFAULT_TENANT = "public";
+
+    // Whitelist of allowed tenant schemas to prevent SQL injection
+    private static final Set<String> ALLOWED_SCHEMAS = new HashSet<>(Arrays.asList(
+            "east", "west", "north", "south", "public"
+    ));
 
     @Autowired
     private DataSource dataSource;
@@ -40,6 +48,12 @@ public class SchemaBasedMultiTenantConnectionProvider implements MultiTenantConn
         final Connection connection = getAnyConnection();
         try {
             String schema = tenantIdentifier != null ? tenantIdentifier : DEFAULT_TENANT;
+
+            // Validate schema name against whitelist to prevent SQL injection
+            if (!ALLOWED_SCHEMAS.contains(schema)) {
+                throw new SQLException("Invalid tenant schema: " + schema + ". Schema must be one of: " + ALLOWED_SCHEMAS);
+            }
+
             // Set the PostgreSQL schema for this connection
             try (Statement statement = connection.createStatement()) {
                 statement.execute("SET search_path TO " + schema);
@@ -53,6 +67,11 @@ public class SchemaBasedMultiTenantConnectionProvider implements MultiTenantConn
     @Override
     public void releaseConnection(String tenantIdentifier, Connection connection) throws SQLException {
         try {
+            // Validate default schema (should always be valid, but defensive programming)
+            if (!ALLOWED_SCHEMAS.contains(DEFAULT_TENANT)) {
+                throw new SQLException("Invalid default schema: " + DEFAULT_TENANT);
+            }
+
             // Reset to default schema before releasing
             try (Statement statement = connection.createStatement()) {
                 statement.execute("SET search_path TO " + DEFAULT_TENANT);

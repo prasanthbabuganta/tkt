@@ -7,6 +7,7 @@ import com.example.thekingstemple.entity.User;
 import com.example.thekingstemple.exception.DuplicateResourceException;
 import com.example.thekingstemple.exception.ResourceNotFoundException;
 import com.example.thekingstemple.repository.UserRepository;
+import com.example.thekingstemple.util.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -47,17 +48,24 @@ public class UserService {
         // Hash PIN with BCrypt
         String pinHash = passwordEncoder.encode(request.getPin());
 
+        // Get current tenant ID from context
+        String tenantId = TenantContext.getTenantId();
+        if (tenantId == null) {
+            throw new IllegalStateException("Tenant context is not set. Cannot create user without tenant.");
+        }
+
         // Create user
         User user = User.builder()
                 .mobileNumber(encryptedMobile.encrypted())
                 .mobileHash(encryptedMobile.hash())
                 .pinHash(pinHash)
                 .role(request.getRole())
+                .tenantId(tenantId)
                 .active(true)
                 .build();
 
         User savedUser = userRepository.save(user);
-        log.info("User created with ID: {} and role: {}", savedUser.getId(), savedUser.getRole());
+        log.info("User created with ID: {} and role: {} for tenant: {}", savedUser.getId(), savedUser.getRole(), savedUser.getTenantId());
 
         // Audit log
         auditLogService.log(

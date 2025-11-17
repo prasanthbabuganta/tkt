@@ -63,7 +63,7 @@ public class AuthService {
 
             // Generate tokens with tenant ID
             String accessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getMobileHash(), user.getRole(), user.getTenantId());
-            String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+            String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId(), user.getTenantId());
 
             log.info("User logged in: {} with role: {} for tenant: {}", user.getId(), user.getRole(), user.getTenantId());
 
@@ -103,38 +103,47 @@ public class AuthService {
             throw new InvalidCredentialsException("Not a valid refresh token");
         }
 
-        // Get user ID from token
+        // Get user ID and tenant ID from token
         Long userId = jwtTokenProvider.getUserIdFromToken(request.getRefreshToken());
+        String tenantId = jwtTokenProvider.getTenantIdFromToken(request.getRefreshToken());
 
-        // Find user
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new InvalidCredentialsException("User not found"));
+        // Set tenant context before querying user
+        TenantContext.setTenantId(tenantId);
 
-        // Check if user is active
-        if (!user.getActive()) {
-            throw new InvalidCredentialsException("Account is inactive");
+        try {
+            // Find user in the correct tenant schema
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new InvalidCredentialsException("User not found"));
+
+            // Check if user is active
+            if (!user.getActive()) {
+                throw new InvalidCredentialsException("Account is inactive");
+            }
+
+            // Generate new access token with tenant ID (refresh token remains the same)
+            String newAccessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getMobileHash(), user.getRole(), user.getTenantId());
+
+            log.info("Access token refreshed for user: {} for tenant: {}", user.getId(), user.getTenantId());
+
+            // Audit log
+            auditLogService.log(user.getId(), "TOKEN_REFRESH");
+
+            return LoginResponse.builder()
+                    .accessToken(newAccessToken)
+                    .refreshToken(request.getRefreshToken()) // Return same refresh token
+                    .tokenType("Bearer")
+                    .expiresIn(accessTokenExpiry)
+                    .user(LoginResponse.UserInfo.builder()
+                            .id(user.getId())
+                            .mobileNumber(encryptionService.decrypt(user.getMobileNumber()))
+                            .role(user.getRole())
+                            .tenantId(user.getTenantId())
+                            .build())
+                    .build();
+        } finally {
+            // Clear tenant context after refresh
+            TenantContext.clear();
         }
-
-        // Generate new access token with tenant ID (refresh token remains the same)
-        String newAccessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getMobileHash(), user.getRole(), user.getTenantId());
-
-        log.info("Access token refreshed for user: {} for tenant: {}", user.getId(), user.getTenantId());
-
-        // Audit log
-        auditLogService.log(user.getId(), "TOKEN_REFRESH");
-
-        return LoginResponse.builder()
-                .accessToken(newAccessToken)
-                .refreshToken(request.getRefreshToken()) // Return same refresh token
-                .tokenType("Bearer")
-                .expiresIn(accessTokenExpiry)
-                .user(LoginResponse.UserInfo.builder()
-                        .id(user.getId())
-                        .mobileNumber(encryptionService.decrypt(user.getMobileNumber()))
-                        .role(user.getRole())
-                        .tenantId(user.getTenantId())
-                        .build())
-                .build();
     }
 
     /**

@@ -56,12 +56,13 @@ public class JwtTokenProvider {
     /**
      * Generate refresh token
      */
-    public String generateRefreshToken(Long userId) {
+    public String generateRefreshToken(Long userId, String tenantId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + refreshTokenExpiry);
 
         return Jwts.builder()
                 .subject(userId.toString())
+                .claim("tenantId", tenantId)
                 .claim("type", "REFRESH")
                 .issuedAt(now)
                 .expiration(expiryDate)
