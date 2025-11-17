@@ -5,16 +5,17 @@ import { authAPI } from '../services/api';
 // Async thunk for login
 export const login = createAsyncThunk(
   'auth/login',
-  async ({ mobileNumber, pin }, { rejectWithValue }) => {
+  async ({ mobileNumber, pin, tenantId }, { rejectWithValue }) => {
     try {
-      const response = await authAPI.login(mobileNumber, pin);
+      const response = await authAPI.login(mobileNumber, pin, tenantId);
       // Backend wraps response in ApiResponse, actual data is in response.data
       const { accessToken, refreshToken, user } = response.data;
 
-      // Store tokens securely
+      // Store tokens and tenant ID securely
       await SecureStore.setItemAsync('accessToken', accessToken);
       await SecureStore.setItemAsync('refreshToken', refreshToken);
       await SecureStore.setItemAsync('user', JSON.stringify(user));
+      await SecureStore.setItemAsync('tenantId', tenantId);
 
       return { user, accessToken, refreshToken };
     } catch (error) {
@@ -40,11 +41,13 @@ export const logout = createAsyncThunk('auth/logout', async (_, { rejectWithValu
     await SecureStore.deleteItemAsync('accessToken');
     await SecureStore.deleteItemAsync('refreshToken');
     await SecureStore.deleteItemAsync('user');
+    await SecureStore.deleteItemAsync('tenantId');
   } catch (error) {
     // Even if backend call fails, still clear local tokens
     await SecureStore.deleteItemAsync('accessToken');
     await SecureStore.deleteItemAsync('refreshToken');
     await SecureStore.deleteItemAsync('user');
+    await SecureStore.deleteItemAsync('tenantId');
 
     // Don't reject - we still want to log the user out locally
     console.error('Logout error:', error);

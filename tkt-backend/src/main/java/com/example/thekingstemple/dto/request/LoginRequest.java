@@ -20,4 +20,8 @@ public class LoginRequest {
     @Size(min = 6, max = 6, message = "PIN must be exactly 6 digits")
     @Pattern(regexp = "^[0-9]{6}$", message = "PIN must contain only digits")
     private String pin;
+
+    @NotBlank(message = "Campus is required")
+    @Pattern(regexp = "^(east|west|north|south)$", message = "Campus must be one of: east, west, north, south")
+    private String tenantId;
 }

@@ -25,5 +25,6 @@ public class LoginResponse {
         private Long id;
         private String mobileNumber; // Decrypted for display
         private Role role;
+        private String tenantId; // Campus: east, west, north, south
     }
 }

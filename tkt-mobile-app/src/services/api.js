@@ -79,8 +79,8 @@ api.interceptors.response.use(
 
 // Auth API calls
 export const authAPI = {
-  login: async (mobileNumber, pin) => {
-    const response = await api.post('/auth/login', { mobileNumber, pin });
+  login: async (mobileNumber, pin, tenantId) => {
+    const response = await api.post('/auth/login', { mobileNumber, pin, tenantId });
     return response.data; // Returns ApiResponse wrapper
   },
 

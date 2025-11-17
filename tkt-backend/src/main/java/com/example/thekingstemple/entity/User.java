@@ -13,7 +13,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "users", indexes = {
         @Index(name = "idx_mobile_hash", columnList = "mobile_hash"),
-        @Index(name = "idx_role", columnList = "role")
+        @Index(name = "idx_role", columnList = "role"),
+        @Index(name = "idx_tenant_id", columnList = "tenant_id")
 })
 @Data
 @Builder
@@ -24,6 +25,12 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    /**
+     * Tenant ID (Campus: east, west, north, south)
+     */
+    @Column(nullable = false, length = 20)
+    private String tenantId;
 
     /**
      * Encrypted mobile number (AES-256-GCM)

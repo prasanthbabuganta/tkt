@@ -11,12 +11,14 @@ import {
   Platform,
   StatusBar,
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { useDispatch, useSelector } from 'react-redux';
 import { login, clearError } from '../slices/authSlice';
 
 const LoginScreen = ({ navigation }) => {
   const [mobileNumber, setMobileNumber] = useState('');
   const [pin, setPin] = useState('');
+  const [campus, setCampus] = useState('east');
   const dispatch = useDispatch();
   const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
 
@@ -35,6 +37,11 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = () => {
     // Validation
+    if (!campus) {
+      Alert.alert('Invalid Input', 'Please select a campus');
+      return;
+    }
+
     if (!mobileNumber || mobileNumber.length !== 10) {
       Alert.alert('Invalid Input', 'Mobile number must be exactly 10 digits');
       return;
@@ -45,7 +52,7 @@ const LoginScreen = ({ navigation }) => {
       return;
     }
 
-    dispatch(login({ mobileNumber, pin }));
+    dispatch(login({ mobileNumber, pin, tenantId: campus }));
   };
 
   return (
@@ -61,6 +68,23 @@ const LoginScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.form}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Campus</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={campus}
+                onValueChange={(itemValue) => setCampus(itemValue)}
+                enabled={!loading}
+                style={styles.picker}
+              >
+                <Picker.Item label="East Campus" value="east" />
+                <Picker.Item label="West Campus" value="west" />
+                <Picker.Item label="North Campus" value="north" />
+                <Picker.Item label="South Campus" value="south" />
+              </Picker>
+            </View>
+          </View>
+
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Mobile Number</Text>
             <TextInput
@@ -148,6 +172,17 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 16,
     color: '#2B2B2B',
+  },
+  pickerContainer: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  picker: {
+    height: 50,
+    width: '100%',
   },
   loginButton: {
     backgroundColor: '#2B2B2B',

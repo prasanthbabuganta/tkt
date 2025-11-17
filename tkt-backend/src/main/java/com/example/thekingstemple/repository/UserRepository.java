@@ -17,9 +17,19 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByMobileHash(String mobileHash);
 
     /**
+     * Find user by mobile hash and tenant ID (for multitenancy)
+     */
+    Optional<User> findByMobileHashAndTenantId(String mobileHash, String tenantId);
+
+    /**
      * Check if mobile hash exists
      */
     boolean existsByMobileHash(String mobileHash);
+
+    /**
+     * Check if mobile hash exists for a specific tenant
+     */
+    boolean existsByMobileHashAndTenantId(String mobileHash, String tenantId);
 
     /**
      * Find all users by role

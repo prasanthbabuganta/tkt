@@ -7,6 +7,7 @@ import com.example.thekingstemple.entity.User;
 import com.example.thekingstemple.exception.InvalidCredentialsException;
 import com.example.thekingstemple.repository.UserRepository;
 import com.example.thekingstemple.security.JwtTokenProvider;
+import com.example.thekingstemple.util.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,43 +40,52 @@ public class AuthService {
      */
     @Transactional
     public LoginResponse login(LoginRequest request) {
-        // Hash the mobile number to find user
-        String mobileHash = encryptionService.hash(request.getMobileNumber());
+        // Set tenant context for this login request
+        TenantContext.setTenantId(request.getTenantId());
 
-        // Find user by mobile hash
-        User user = userRepository.findByMobileHash(mobileHash)
-                .orElseThrow(InvalidCredentialsException::new);
+        try {
+            // Hash the mobile number to find user
+            String mobileHash = encryptionService.hash(request.getMobileNumber());
 
-        // Check if user is active
-        if (!user.getActive()) {
-            throw new InvalidCredentialsException("Account is inactive");
+            // Find user by mobile hash and tenant ID
+            User user = userRepository.findByMobileHashAndTenantId(mobileHash, request.getTenantId())
+                    .orElseThrow(InvalidCredentialsException::new);
+
+            // Check if user is active
+            if (!user.getActive()) {
+                throw new InvalidCredentialsException("Account is inactive");
+            }
+
+            // Verify PIN
+            if (!passwordEncoder.matches(request.getPin(), user.getPinHash())) {
+                throw new InvalidCredentialsException();
+            }
+
+            // Generate tokens with tenant ID
+            String accessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getMobileHash(), user.getRole(), user.getTenantId());
+            String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+
+            log.info("User logged in: {} with role: {} for tenant: {}", user.getId(), user.getRole(), user.getTenantId());
+
+            // Audit log
+            auditLogService.log(user.getId(), "LOGIN");
+
+            return LoginResponse.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .tokenType("Bearer")
+                    .expiresIn(accessTokenExpiry)
+                    .user(LoginResponse.UserInfo.builder()
+                            .id(user.getId())
+                            .mobileNumber(encryptionService.decrypt(user.getMobileNumber()))
+                            .role(user.getRole())
+                            .tenantId(user.getTenantId())
+                            .build())
+                    .build();
+        } finally {
+            // Clear tenant context after login
+            TenantContext.clear();
         }
-
-        // Verify PIN
-        if (!passwordEncoder.matches(request.getPin(), user.getPinHash())) {
-            throw new InvalidCredentialsException();
-        }
-
-        // Generate tokens
-        String accessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getMobileHash(), user.getRole());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
-
-        log.info("User logged in: {} with role: {}", user.getId(), user.getRole());
-
-        // Audit log
-        auditLogService.log(user.getId(), "LOGIN");
-
-        return LoginResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .tokenType("Bearer")
-                .expiresIn(accessTokenExpiry)
-                .user(LoginResponse.UserInfo.builder()
-                        .id(user.getId())
-                        .mobileNumber(encryptionService.decrypt(user.getMobileNumber()))
-                        .role(user.getRole())
-                        .build())
-                .build();
     }
 
     /**
@@ -105,10 +115,10 @@ public class AuthService {
             throw new InvalidCredentialsException("Account is inactive");
         }
 
-        // Generate new access token (refresh token remains the same)
-        String newAccessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getMobileHash(), user.getRole());
+        // Generate new access token with tenant ID (refresh token remains the same)
+        String newAccessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getMobileHash(), user.getRole(), user.getTenantId());
 
-        log.info("Access token refreshed for user: {}", user.getId());
+        log.info("Access token refreshed for user: {} for tenant: {}", user.getId(), user.getTenantId());
 
         // Audit log
         auditLogService.log(user.getId(), "TOKEN_REFRESH");
@@ -122,6 +132,7 @@ public class AuthService {
                         .id(user.getId())
                         .mobileNumber(encryptionService.decrypt(user.getMobileNumber()))
                         .role(user.getRole())
+                        .tenantId(user.getTenantId())
                         .build())
                 .build();
     }
