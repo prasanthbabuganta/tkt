@@ -60,7 +60,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         // Set tenant context for schema-based multitenancy
                         if (tenantId != null) {
                             TenantContext.setTenantId(tenantId);
-                            log.debug("Set tenant context: {}", tenantId);
+                            log.debug("Set tenant context from JWT: {} for user: {}", tenantId, userId);
+                        } else {
+                            log.warn("JWT token does not contain tenantId for user: {}. This may cause database queries to fail.", userId);
                         }
 
                         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -72,7 +74,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                        log.debug("Set authentication for user: {}, role: {}, tenant: {}", userId, role, tenantId);
+                        log.debug("Set authentication for user: {}, role: {}, tenant: {} for request: {} {}",
+                                userId, role, tenantId, request.getMethod(), request.getRequestURI());
                     }
                 }
             }
@@ -84,7 +87,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } finally {
             // Clear tenant context after request is processed
+            String clearedTenant = TenantContext.getTenantId();
             TenantContext.clear();
+            if (clearedTenant != null) {
+                log.debug("Cleared tenant context: {} after request completed", clearedTenant);
+            }
         }
     }
 

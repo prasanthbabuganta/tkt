@@ -1,5 +1,6 @@
 package com.example.thekingstemple.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import java.util.Set;
  * Uses PostgreSQL schemas: east, west, north, south
  */
 @Component
+@Slf4j
 public class SchemaBasedMultiTenantConnectionProvider implements MultiTenantConnectionProvider<String>, HibernatePropertiesCustomizer {
 
     private static final long serialVersionUID = 1L;
@@ -51,14 +53,17 @@ public class SchemaBasedMultiTenantConnectionProvider implements MultiTenantConn
 
             // Validate schema name against whitelist to prevent SQL injection
             if (!ALLOWED_SCHEMAS.contains(schema)) {
+                log.error("Attempted to access invalid tenant schema: {}. Allowed schemas: {}", schema, ALLOWED_SCHEMAS);
                 throw new SQLException("Invalid tenant schema: " + schema + ". Schema must be one of: " + ALLOWED_SCHEMAS);
             }
 
             // Set the PostgreSQL schema for this connection
             try (Statement statement = connection.createStatement()) {
                 statement.execute("SET search_path TO " + schema);
+                log.debug("Successfully switched database schema to: {}", schema);
             }
         } catch (SQLException e) {
+            log.error("Failed to set schema to {}: {}", tenantIdentifier, e.getMessage());
             throw new SQLException("Could not set schema to " + tenantIdentifier, e);
         }
         return connection;
@@ -69,16 +74,18 @@ public class SchemaBasedMultiTenantConnectionProvider implements MultiTenantConn
         try {
             // Validate default schema (should always be valid, but defensive programming)
             if (!ALLOWED_SCHEMAS.contains(DEFAULT_TENANT)) {
+                log.error("Invalid default schema: {}", DEFAULT_TENANT);
                 throw new SQLException("Invalid default schema: " + DEFAULT_TENANT);
             }
 
             // Reset to default schema before releasing
             try (Statement statement = connection.createStatement()) {
                 statement.execute("SET search_path TO " + DEFAULT_TENANT);
+                log.debug("Reset schema to {} before releasing connection for tenant: {}", DEFAULT_TENANT, tenantIdentifier);
             }
         } catch (SQLException e) {
             // Log the error but don't fail the release
-            e.printStackTrace();
+            log.error("Error resetting schema to default before releasing connection: {}", e.getMessage(), e);
         }
         connection.close();
     }

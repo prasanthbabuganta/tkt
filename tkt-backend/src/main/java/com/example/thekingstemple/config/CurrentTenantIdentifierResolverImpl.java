@@ -1,6 +1,7 @@
 package com.example.thekingstemple.config;
 
 import com.example.thekingstemple.util.TenantContext;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
@@ -12,6 +13,7 @@ import java.util.Map;
  * Resolves the current tenant identifier for Hibernate multitenancy
  */
 @Component
+@Slf4j
 public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentifierResolver<String>, HibernatePropertiesCustomizer {
 
     private static final String DEFAULT_TENANT = "public";
@@ -19,7 +21,17 @@ public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentif
     @Override
     public String resolveCurrentTenantIdentifier() {
         String tenantId = TenantContext.getTenantId();
-        return tenantId != null ? tenantId : DEFAULT_TENANT;
+
+        if (tenantId == null) {
+            // During Spring initialization (repository setup), no tenant context is available.
+            // Return default tenant to allow initialization to proceed.
+            // Actual requests will have tenant context set via JwtAuthenticationFilter.
+            log.debug("No tenant context set, using default tenant: {}", DEFAULT_TENANT);
+            return DEFAULT_TENANT;
+        }
+
+        log.debug("Resolved tenant identifier: {}", tenantId);
+        return tenantId;
     }
 
     @Override
