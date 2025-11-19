@@ -40,19 +40,27 @@ public class AuthService {
     /**
      * Login with mobile number and PIN
      */
-    @Transactional
     public LoginResponse login(LoginRequest request) {
-        // Set tenant context for this login request
+        // Set tenant context BEFORE starting transaction
+        // This ensures Hibernate uses the correct schema when the transaction starts
         TenantContext.setTenantId(request.getTenantId());
+        log.info("[AUTH-LOGIN] Set tenant context to: {} for login request", request.getTenantId());
+        try {
+            return performLogin(request);
+        } finally {
+            // Always clear tenant context after login completes
+            TenantContext.clear();
+            log.debug("Cleared tenant context after login completion");
+        }
+    }
 
-        // Register callback to clear tenant context AFTER transaction commits
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCompletion(int status) {
-                TenantContext.clear();
-                log.debug("Cleared tenant context after login transaction completion");
-            }
-        });
+    /**
+     * Performs the actual login logic within a transaction
+     * Note: Must be public for Spring AOP @Transactional to work
+     */
+    @Transactional
+    public LoginResponse performLogin(LoginRequest request) {
+        log.info("[AUTH-PERFORM-LOGIN] Transaction started, tenant context is: {}", TenantContext.getTenantId());
 
         // Hash the mobile number to find user
         String mobileHash = encryptionService.hash(request.getMobileNumber());
@@ -115,6 +123,7 @@ public class AuthService {
 
         // Set tenant context before querying user
         TenantContext.setTenantId(tenantId);
+        log.info("[AUTH-REFRESH] Set tenant context to: {} for token refresh (userId: {})", tenantId, userId);
 
         // Register callback to clear tenant context AFTER transaction commits
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {

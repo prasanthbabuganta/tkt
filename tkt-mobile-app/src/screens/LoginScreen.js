@@ -10,17 +10,28 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
+  Modal,
+  ScrollView,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import { useDispatch, useSelector } from 'react-redux';
 import { login, clearError } from '../slices/authSlice';
+
+const campusOptions = [
+  { label: 'East Campus', value: 'east' },
+  { label: 'West Campus', value: 'west' },
+  { label: 'North Campus', value: 'north' },
+  { label: 'South Campus', value: 'south' },
+];
 
 const LoginScreen = ({ navigation }) => {
   const [mobileNumber, setMobileNumber] = useState('');
   const [pin, setPin] = useState('');
   const [campus, setCampus] = useState('east');
+  const [showCampusModal, setShowCampusModal] = useState(false);
   const dispatch = useDispatch();
   const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
+
+  const selectedCampusLabel = campusOptions.find(opt => opt.value === campus)?.label || 'Select Campus';
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -69,23 +80,6 @@ const LoginScreen = ({ navigation }) => {
 
         <View style={styles.form}>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Campus</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={campus}
-                onValueChange={(itemValue) => setCampus(itemValue)}
-                enabled={!loading}
-                style={styles.picker}
-              >
-                <Picker.Item label="East Campus" value="east" />
-                <Picker.Item label="West Campus" value="west" />
-                <Picker.Item label="North Campus" value="north" />
-                <Picker.Item label="South Campus" value="south" />
-              </Picker>
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
             <Text style={styles.label}>Mobile Number</Text>
             <TextInput
               style={styles.input}
@@ -112,6 +106,18 @@ const LoginScreen = ({ navigation }) => {
             />
           </View>
 
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Campus</Text>
+            <TouchableOpacity
+              style={styles.dropdownButton}
+              onPress={() => !loading && setShowCampusModal(true)}
+              disabled={loading}
+            >
+              <Text style={styles.dropdownButtonText}>{selectedCampusLabel}</Text>
+              <Text style={styles.dropdownIcon}>▼</Text>
+            </TouchableOpacity>
+          </View>
+
           <TouchableOpacity
             style={[styles.loginButton, loading && styles.loginButtonDisabled]}
             onPress={handleLogin}
@@ -125,6 +131,54 @@ const LoginScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
+
+      <Modal
+        visible={showCampusModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowCampusModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Campus</Text>
+              <TouchableOpacity
+                onPress={() => setShowCampusModal(false)}
+                style={styles.closeButton}
+              >
+                <Text style={styles.closeButtonText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.optionsList}>
+              {campusOptions.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    styles.optionItem,
+                    campus === option.value && styles.optionItemSelected,
+                  ]}
+                  onPress={() => {
+                    setCampus(option.value);
+                    setShowCampusModal(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.optionText,
+                      campus === option.value && styles.optionTextSelected,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                  {campus === option.value && (
+                    <Text style={styles.checkmark}>✓</Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 };
@@ -173,16 +227,87 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#2B2B2B',
   },
-  pickerContainer: {
+  dropdownButton: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#D1D5DB',
     borderRadius: 8,
-    overflow: 'hidden',
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  picker: {
-    height: 50,
-    width: '100%',
+  dropdownButtonText: {
+    fontSize: 16,
+    color: '#2B2B2B',
+  },
+  dropdownIcon: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    maxHeight: '50%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2B2B2B',
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    fontSize: 18,
+    color: '#6B7280',
+  },
+  optionsList: {
+    paddingHorizontal: 20,
+  },
+  optionItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  optionItemSelected: {
+    backgroundColor: '#F9FAFB',
+  },
+  optionText: {
+    fontSize: 16,
+    color: '#2B2B2B',
+  },
+  optionTextSelected: {
+    fontWeight: '600',
+    color: '#2B2B2B',
+  },
+  checkmark: {
+    fontSize: 18,
+    color: '#2B2B2B',
+    fontWeight: '600',
   },
   loginButton: {
     backgroundColor: '#2B2B2B',

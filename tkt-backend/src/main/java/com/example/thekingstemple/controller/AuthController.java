@@ -28,8 +28,11 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
-        log.info("Login attempt for mobile: {}", request.getMobileNumber());
+        log.info("=== LOGIN REQUEST === Mobile: {}, Campus/TenantId: {}",
+                request.getMobileNumber(), request.getTenantId());
         LoginResponse response = authService.login(request);
+        log.info("=== LOGIN SUCCESS === Campus/TenantId: {}, UserId: {}, Role: {}",
+                request.getTenantId(), response.getUser().getId(), response.getUser().getRole());
         return ResponseEntity.ok(ApiResponse.success("Login successful", response));
     }
 

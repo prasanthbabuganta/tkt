@@ -230,6 +230,15 @@ export const reportsAPI = {
   },
 };
 
+// Admin Dashboard API calls (Admin only)
+export const adminDashboardAPI = {
+  getMultiCampusDashboard: async (date) => {
+    const params = date ? `?date=${date}` : '';
+    const response = await api.get(`/admin/dashboard/multi-campus${params}`);
+    return response.data;
+  },
+};
+
 // User management API calls (Admin only)
 export const userAPI = {
   getAll: async () => {

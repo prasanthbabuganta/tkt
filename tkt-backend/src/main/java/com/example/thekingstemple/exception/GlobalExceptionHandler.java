@@ -125,9 +125,14 @@ public class GlobalExceptionHandler {
             Exception ex,
             WebRequest request
     ) {
-        log.error("Unexpected error", ex);
+        log.error("=== GLOBAL EXCEPTION HANDLER ===");
+        log.error("Exception type: {}", ex.getClass().getName());
+        log.error("Exception message: {}", ex.getMessage());
+        log.error("Request description: {}", request.getDescription(false));
+        log.error("Full stack trace:", ex);
+
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("An unexpected error occurred. Please try again later."));
+                .body(ApiResponse.error("An unexpected error occurred: " + ex.getMessage()));
     }
 }

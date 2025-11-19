@@ -47,9 +47,15 @@ public class SchemaBasedMultiTenantConnectionProvider implements MultiTenantConn
 
     @Override
     public Connection getConnection(String tenantIdentifier) throws SQLException {
+        log.info("[CONNECTION-PROVIDER] getConnection() called with tenantIdentifier: {} on thread: {}",
+                tenantIdentifier, Thread.currentThread().getName());
+
         final Connection connection = getAnyConnection();
         try {
             String schema = tenantIdentifier != null ? tenantIdentifier : DEFAULT_TENANT;
+
+            log.info("[CONNECTION-PROVIDER] Using schema: {} (original tenantIdentifier: {})",
+                    schema, tenantIdentifier);
 
             // Validate schema name against whitelist to prevent SQL injection
             if (!ALLOWED_SCHEMAS.contains(schema)) {
@@ -60,7 +66,7 @@ public class SchemaBasedMultiTenantConnectionProvider implements MultiTenantConn
             // Set the PostgreSQL schema for this connection
             try (Statement statement = connection.createStatement()) {
                 statement.execute("SET search_path TO " + schema);
-                log.debug("Successfully switched database schema to: {}", schema);
+                log.info("[CONNECTION-PROVIDER] Successfully switched database schema to: {}", schema);
             }
         } catch (SQLException e) {
             log.error("Failed to set schema to {}: {}", tenantIdentifier, e.getMessage());

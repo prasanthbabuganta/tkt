@@ -4,11 +4,13 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 
 // Screens
 import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
+import AdminDashboardScreen from '../screens/AdminDashboardScreen';
 import RegisterVehicleScreen from '../screens/RegisterVehicleScreen';
 import EditVehicleScreen from '../screens/EditVehicleScreen';
 import AttendanceScreen from '../screens/AttendanceScreen';
@@ -21,6 +23,8 @@ const Tab = createBottomTabNavigator();
 // Bottom Tab Navigator
 const MainTabs = () => {
   const insets = useSafeAreaInsets();
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = user?.role === 'ADMIN';
 
   return (
     <Tab.Navigator
@@ -66,7 +70,7 @@ const MainTabs = () => {
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={isAdmin ? AdminDashboardScreen : HomeScreen}
         options={{ title: 'Home' }}
       />
       <Tab.Screen

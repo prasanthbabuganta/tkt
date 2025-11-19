@@ -48,6 +48,7 @@ public class AdminSeedConfig {
                 try {
                     // Set tenant context for this operation
                     TenantContext.setTenantId(tenantId);
+                    log.info("[ADMIN-SEED] Set tenant context to: {} for admin user seeding", tenantId);
 
                     // Check if admin exists for this tenant
                     if (!userRepository.existsByMobileHashAndTenantId(mobileHash, tenantId)) {
@@ -74,6 +75,7 @@ public class AdminSeedConfig {
                     }
                 } finally {
                     // Clear tenant context
+                    log.info("[ADMIN-SEED] Clearing tenant context after processing tenant: {}", tenantId);
                     TenantContext.clear();
                 }
             }

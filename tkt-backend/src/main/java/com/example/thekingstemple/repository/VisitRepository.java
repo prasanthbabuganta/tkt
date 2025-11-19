@@ -49,4 +49,10 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
      */
     @Query("SELECT v.vehicle.id FROM Visit v WHERE v.visitDate = :visitDate")
     List<Long> findVehicleIdsByVisitDate(@Param("visitDate") LocalDate visitDate);
+
+    /**
+     * Count arrivals by vehicle type for a specific date
+     */
+    @Query("SELECT COUNT(v) FROM Visit v WHERE v.visitDate = :visitDate AND v.vehicle.vehicleType = :vehicleType")
+    long countByVisitDateAndVehicleType(@Param("visitDate") LocalDate visitDate, @Param("vehicleType") com.example.thekingstemple.entity.VehicleType vehicleType);
 }

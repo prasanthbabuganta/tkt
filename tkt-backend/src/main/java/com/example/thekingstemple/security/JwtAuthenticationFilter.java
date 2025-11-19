@@ -60,7 +60,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         // Set tenant context for schema-based multitenancy
                         if (tenantId != null) {
                             TenantContext.setTenantId(tenantId);
-                            log.debug("Set tenant context from JWT: {} for user: {}", tenantId, userId);
+                            log.info("[JWT-FILTER] Set campus/tenant context from JWT: {} for user: {} on request: {} {}",
+                                    tenantId, userId, request.getMethod(), request.getRequestURI());
                         } else {
                             log.warn("JWT token does not contain tenantId for user: {}. This may cause database queries to fail.", userId);
                         }
@@ -74,7 +75,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                        log.debug("Set authentication for user: {}, role: {}, tenant: {} for request: {} {}",
+                        log.info("[JWT-FILTER] Authenticated user: {}, role: {}, campus/tenant: {} for request: {} {}",
                                 userId, role, tenantId, request.getMethod(), request.getRequestURI());
                     }
                 }

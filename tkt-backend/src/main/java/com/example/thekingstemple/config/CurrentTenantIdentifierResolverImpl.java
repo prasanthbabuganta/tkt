@@ -21,16 +21,22 @@ public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentif
     @Override
     public String resolveCurrentTenantIdentifier() {
         String tenantId = TenantContext.getTenantId();
+        String threadName = Thread.currentThread().getName();
+
+        log.info("[HIBERNATE-TENANT-RESOLVER] resolveCurrentTenantIdentifier() called on thread: {}, TenantContext.getTenantId() = {}",
+                threadName, tenantId);
 
         if (tenantId == null) {
             // During Spring initialization (repository setup), no tenant context is available.
             // Return default tenant to allow initialization to proceed.
             // Actual requests will have tenant context set via JwtAuthenticationFilter.
-            log.debug("No tenant context set, using default tenant: {}", DEFAULT_TENANT);
+            log.info("[HIBERNATE-TENANT-RESOLVER] No tenant context set, using default tenant: {} on thread: {}",
+                    DEFAULT_TENANT, threadName);
             return DEFAULT_TENANT;
         }
 
-        log.debug("Resolved tenant identifier: {}", tenantId);
+        log.info("[HIBERNATE-TENANT-RESOLVER] Resolved campus/tenant schema: {} for database query on thread: {}",
+                tenantId, threadName);
         return tenantId;
     }
 
