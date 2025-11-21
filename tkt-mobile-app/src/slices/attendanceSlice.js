@@ -11,7 +11,7 @@ export const markArrival = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to mark arrival');
     }
-  }
+  },
 );
 
 export const fetchUnmarkedVehicles = createAsyncThunk(
@@ -23,7 +23,7 @@ export const fetchUnmarkedVehicles = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch unmarked vehicles');
     }
-  }
+  },
 );
 
 export const fetchTodayVisits = createAsyncThunk(
@@ -35,7 +35,7 @@ export const fetchTodayVisits = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch visits');
     }
-  }
+  },
 );
 
 const attendanceSlice = createSlice({
@@ -68,7 +68,7 @@ const attendanceSlice = createSlice({
         state.successMessage = 'Arrival marked successfully';
         // Remove vehicle from unmarked list
         state.unmarkedVehicles = state.unmarkedVehicles.filter(
-          (v) => v.vehicleNumber !== action.payload.vehicle.vehicleNumber
+          (v) => v.vehicleNumber !== action.payload.vehicle.vehicleNumber,
         );
         // Add to today's visits
         state.todayVisits.push(action.payload);

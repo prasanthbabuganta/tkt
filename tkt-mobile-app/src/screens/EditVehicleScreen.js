@@ -152,7 +152,7 @@ const EditVehicleScreen = ({ route, navigation }) => {
           style: 'cancel',
         },
       ],
-      { cancelable: true }
+      { cancelable: true },
     );
   };
 
@@ -170,10 +170,7 @@ const EditVehicleScreen = ({ route, navigation }) => {
     // Indian vehicle number format validation
     const vehiclePattern = /^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{1,4}$/;
     if (!vehicleNumber || !vehiclePattern.test(vehicleNumber)) {
-      Alert.alert(
-        'Invalid Input',
-        'Vehicle number must follow Indian format (e.g., KA01AB1234)'
-      );
+      Alert.alert('Invalid Input', 'Vehicle number must follow Indian format (e.g., KA01AB1234)');
       return false;
     }
 
@@ -194,7 +191,7 @@ const EditVehicleScreen = ({ route, navigation }) => {
           carImage,
           keyImage,
         },
-      })
+      }),
     );
   };
 
@@ -206,10 +203,7 @@ const EditVehicleScreen = ({ route, navigation }) => {
       <StatusBar barStyle="light-content" backgroundColor="#2B2B2B" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <View style={styles.headerTextContainer}>
@@ -265,10 +259,7 @@ const EditVehicleScreen = ({ route, navigation }) => {
             <Text style={styles.label}>Vehicle Type</Text>
             <View style={styles.typeSelector}>
               <TouchableOpacity
-                style={[
-                  styles.typeButton,
-                  vehicleType === 'CAR' && styles.typeButtonActive,
-                ]}
+                style={[styles.typeButton, vehicleType === 'CAR' && styles.typeButtonActive]}
                 onPress={() => setVehicleType('CAR')}
                 disabled={loading}
               >
@@ -289,10 +280,7 @@ const EditVehicleScreen = ({ route, navigation }) => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[
-                  styles.typeButton,
-                  vehicleType === 'BIKE' && styles.typeButtonActive,
-                ]}
+                style={[styles.typeButton, vehicleType === 'BIKE' && styles.typeButtonActive]}
                 onPress={() => setVehicleType('BIKE')}
                 disabled={loading}
               >
@@ -341,7 +329,9 @@ const EditVehicleScreen = ({ route, navigation }) => {
               ) : (
                 <View style={styles.placeholderContainer}>
                   <Ionicons name="camera" size={32} color="#6B7280" />
-                  <Text style={styles.placeholderText}>Tap to take photo or select from library</Text>
+                  <Text style={styles.placeholderText}>
+                    Tap to take photo or select from library
+                  </Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -374,7 +364,9 @@ const EditVehicleScreen = ({ route, navigation }) => {
               ) : (
                 <View style={styles.placeholderContainer}>
                   <Ionicons name="key" size={32} color="#6B7280" />
-                  <Text style={styles.placeholderText}>Tap to take photo or select from library</Text>
+                  <Text style={styles.placeholderText}>
+                    Tap to take photo or select from library
+                  </Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -390,7 +382,12 @@ const EditVehicleScreen = ({ route, navigation }) => {
               <ActivityIndicator color="#FFFFFF" />
             ) : (
               <>
-                <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={20}
+                  color="#FFFFFF"
+                  style={{ marginRight: 8 }}
+                />
                 <Text style={styles.updateButtonText}>Update Vehicle</Text>
               </>
             )}

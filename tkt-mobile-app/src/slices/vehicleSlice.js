@@ -11,7 +11,7 @@ export const fetchVehicles = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch vehicles');
     }
-  }
+  },
 );
 
 export const searchVehicles = createAsyncThunk(
@@ -23,7 +23,7 @@ export const searchVehicles = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Search failed');
     }
-  }
+  },
 );
 
 export const registerVehicle = createAsyncThunk(
@@ -35,7 +35,7 @@ export const registerVehicle = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Registration failed');
     }
-  }
+  },
 );
 
 export const updateVehicle = createAsyncThunk(
@@ -47,7 +47,7 @@ export const updateVehicle = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Update failed');
     }
-  }
+  },
 );
 
 const vehicleSlice = createSlice({
@@ -121,7 +121,7 @@ const vehicleSlice = createSlice({
       .addCase(updateVehicle.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = 'Vehicle updated successfully';
-        const index = state.vehicles.findIndex(v => v.id === action.payload.id);
+        const index = state.vehicles.findIndex((v) => v.id === action.payload.id);
         if (index !== -1) {
           state.vehicles[index] = action.payload;
         }

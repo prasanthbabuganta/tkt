@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { login, clearError } from '../slices/authSlice';
+import { colors } from '../theme/colors';
 
 const campusOptions = [
   { label: 'East Campus', value: 'east' },
@@ -31,7 +32,8 @@ const LoginScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
 
-  const selectedCampusLabel = campusOptions.find(opt => opt.value === campus)?.label || 'Select Campus';
+  const selectedCampusLabel =
+    campusOptions.find((opt) => opt.value === campus)?.label || 'Select Campus';
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -71,7 +73,7 @@ const LoginScreen = ({ navigation }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.title}>Welcome</Text>
@@ -89,6 +91,7 @@ const LoginScreen = ({ navigation }) => {
               keyboardType="number-pad"
               maxLength={10}
               editable={!loading}
+              placeholderTextColor={colors.text.secondary}
             />
           </View>
 
@@ -103,6 +106,7 @@ const LoginScreen = ({ navigation }) => {
               maxLength={6}
               secureTextEntry={true}
               editable={!loading}
+              placeholderTextColor={colors.text.secondary}
             />
           </View>
 
@@ -124,7 +128,7 @@ const LoginScreen = ({ navigation }) => {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <ActivityIndicator color={colors.text.light} />
             ) : (
               <Text style={styles.loginButtonText}>Login</Text>
             )}
@@ -153,10 +157,7 @@ const LoginScreen = ({ navigation }) => {
               {campusOptions.map((option) => (
                 <TouchableOpacity
                   key={option.value}
-                  style={[
-                    styles.optionItem,
-                    campus === option.value && styles.optionItemSelected,
-                  ]}
+                  style={[styles.optionItem, campus === option.value && styles.optionItemSelected]}
                   onPress={() => {
                     setCampus(option.value);
                     setShowCampusModal(false);
@@ -170,9 +171,7 @@ const LoginScreen = ({ navigation }) => {
                   >
                     {option.label}
                   </Text>
-                  {campus === option.value && (
-                    <Text style={styles.checkmark}>✓</Text>
-                  )}
+                  {campus === option.value && <Text style={styles.checkmark}>✓</Text>}
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -186,7 +185,7 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -199,12 +198,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#2B2B2B',
+    color: colors.text.primary,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: colors.text.secondary,
   },
   form: {
     width: '100%',
@@ -215,22 +214,22 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: colors.text.primary,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.input.background,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.input.border,
     borderRadius: 8,
     padding: 16,
     fontSize: 16,
-    color: '#2B2B2B',
+    color: colors.text.primary,
   },
   dropdownButton: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.input.background,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.input.border,
     borderRadius: 8,
     padding: 16,
     flexDirection: 'row',
@@ -239,11 +238,11 @@ const styles = StyleSheet.create({
   },
   dropdownButtonText: {
     fontSize: 16,
-    color: '#2B2B2B',
+    color: colors.text.primary,
   },
   dropdownIcon: {
     fontSize: 12,
-    color: '#6B7280',
+    color: colors.text.secondary,
   },
   modalOverlay: {
     flex: 1,
@@ -251,7 +250,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingBottom: Platform.OS === 'ios' ? 40 : 20,
@@ -268,7 +267,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#2B2B2B',
+    color: colors.text.primary,
   },
   closeButton: {
     width: 32,
@@ -280,7 +279,7 @@ const styles = StyleSheet.create({
   },
   closeButtonText: {
     fontSize: 18,
-    color: '#6B7280',
+    color: colors.text.secondary,
   },
   optionsList: {
     paddingHorizontal: 20,
@@ -294,33 +293,33 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F3F4F6',
   },
   optionItemSelected: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   optionText: {
     fontSize: 16,
-    color: '#2B2B2B',
+    color: colors.text.primary,
   },
   optionTextSelected: {
     fontWeight: '600',
-    color: '#2B2B2B',
+    color: colors.text.primary,
   },
   checkmark: {
     fontSize: 18,
-    color: '#2B2B2B',
+    color: colors.text.primary,
     fontWeight: '600',
   },
   loginButton: {
-    backgroundColor: '#2B2B2B',
+    backgroundColor: colors.primary,
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',
     marginTop: 12,
   },
   loginButtonDisabled: {
-    backgroundColor: '#9CA3AF',
+    backgroundColor: colors.disabled,
   },
   loginButtonText: {
-    color: '#FFFFFF',
+    color: colors.text.light,
     fontSize: 16,
     fontWeight: '600',
   },

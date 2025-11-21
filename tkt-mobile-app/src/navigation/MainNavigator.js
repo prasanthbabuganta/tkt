@@ -83,11 +83,7 @@ const MainTabs = () => {
         component={AttendanceScreen}
         options={{ title: 'Attendance' }}
       />
-      <Tab.Screen
-        name="More"
-        component={MoreScreen}
-        options={{ title: 'More' }}
-      />
+      <Tab.Screen name="More" component={MoreScreen} options={{ title: 'More' }} />
     </Tab.Navigator>
   );
 };

@@ -17,7 +17,7 @@ export default function App() {
     async function prepare() {
       try {
         // Pre-load any resources or data here if needed
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (e) {
         console.warn(e);
       } finally {

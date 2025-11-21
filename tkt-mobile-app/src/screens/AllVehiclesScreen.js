@@ -52,10 +52,7 @@ const AllVehiclesScreen = ({ navigation }) => {
       <View style={styles.vehicleHeader}>
         <Text style={styles.vehicleNumber}>{item.vehicleNumber}</Text>
         <View
-          style={[
-            styles.badge,
-            item.vehicleType === 'CAR' ? styles.carBadge : styles.bikeBadge,
-          ]}
+          style={[styles.badge, item.vehicleType === 'CAR' ? styles.carBadge : styles.bikeBadge]}
         >
           <Text style={styles.badgeText}>{item.vehicleType}</Text>
         </View>
@@ -63,12 +60,7 @@ const AllVehiclesScreen = ({ navigation }) => {
       <Text style={styles.ownerName}>{item.ownerName}</Text>
       <Text style={styles.ownerMobile}>{item.ownerMobile}</Text>
       <View style={styles.registeredDate}>
-        <Ionicons
-          name="calendar"
-          size={14}
-          color="#9CA3AF"
-          style={{ marginRight: 4 }}
-        />
+        <Ionicons name="calendar" size={14} color="#9CA3AF" style={{ marginRight: 4 }} />
         <Text style={styles.registeredDateText}>
           Registered: {new Date(item.createdAt).toLocaleDateString('en-IN')}
         </Text>
@@ -91,10 +83,7 @@ const AllVehiclesScreen = ({ navigation }) => {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
@@ -108,27 +97,18 @@ const AllVehiclesScreen = ({ navigation }) => {
       {/* Filter Buttons */}
       <View style={styles.filterContainer}>
         <TouchableOpacity
-          style={[
-            styles.filterButton,
-            filter === 'ALL' && styles.filterButtonActive,
-          ]}
+          style={[styles.filterButton, filter === 'ALL' && styles.filterButtonActive]}
           onPress={() => setFilter('ALL')}
         >
           <Text
-            style={[
-              styles.filterButtonText,
-              filter === 'ALL' && styles.filterButtonTextActive,
-            ]}
+            style={[styles.filterButtonText, filter === 'ALL' && styles.filterButtonTextActive]}
           >
             All ({vehicles.length})
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.filterButton,
-            filter === 'CAR' && styles.filterButtonActive,
-          ]}
+          style={[styles.filterButton, filter === 'CAR' && styles.filterButtonActive]}
           onPress={() => setFilter('CAR')}
         >
           <Ionicons
@@ -138,20 +118,14 @@ const AllVehiclesScreen = ({ navigation }) => {
             style={{ marginRight: 4 }}
           />
           <Text
-            style={[
-              styles.filterButtonText,
-              filter === 'CAR' && styles.filterButtonTextActive,
-            ]}
+            style={[styles.filterButtonText, filter === 'CAR' && styles.filterButtonTextActive]}
           >
             Cars ({vehicles.filter((v) => v.vehicleType === 'CAR').length})
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.filterButton,
-            filter === 'BIKE' && styles.filterButtonActive,
-          ]}
+          style={[styles.filterButton, filter === 'BIKE' && styles.filterButtonActive]}
           onPress={() => setFilter('BIKE')}
         >
           <Ionicons
@@ -161,10 +135,7 @@ const AllVehiclesScreen = ({ navigation }) => {
             style={{ marginRight: 4 }}
           />
           <Text
-            style={[
-              styles.filterButtonText,
-              filter === 'BIKE' && styles.filterButtonTextActive,
-            ]}
+            style={[styles.filterButtonText, filter === 'BIKE' && styles.filterButtonTextActive]}
           >
             Bikes ({vehicles.filter((v) => v.vehicleType === 'BIKE').length})
           </Text>
@@ -173,20 +144,14 @@ const AllVehiclesScreen = ({ navigation }) => {
 
       {/* Vehicles List */}
       {loading && !vehicles.length ? (
-        <ActivityIndicator
-          size="large"
-          color="#2B2B2B"
-          style={styles.loader}
-        />
+        <ActivityIndicator size="large" color="#2B2B2B" style={styles.loader} />
       ) : (
         <FlatList
           data={filteredVehicles}
           renderItem={renderVehicleItem}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContainer}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="car-outline" size={64} color="#D1D5DB" />

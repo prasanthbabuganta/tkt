@@ -31,7 +31,7 @@ const HomeScreen = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       fetchTodayStats();
-    }, [])
+    }, []),
   );
 
   useEffect(() => {
@@ -66,39 +66,37 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const handleMarkAttendance = (vehicleNumber) => {
-    Alert.alert(
-      'Mark Attendance',
-      `Are you sure you want to mark arrival for ${vehicleNumber}?`,
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
+    Alert.alert('Mark Attendance', `Are you sure you want to mark arrival for ${vehicleNumber}?`, [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Mark Arrival',
+        onPress: async () => {
+          setMarkingAttendance(vehicleNumber);
+          try {
+            await dispatch(markArrival(vehicleNumber)).unwrap();
+            Alert.alert('Success', 'Attendance marked successfully!');
+            // Refresh stats to update the counts
+            await fetchTodayStats();
+          } catch (error) {
+            Alert.alert('Error', error?.message || 'Failed to mark attendance');
+          } finally {
+            setMarkingAttendance(null);
+          }
         },
-        {
-          text: 'Mark Arrival',
-          onPress: async () => {
-            setMarkingAttendance(vehicleNumber);
-            try {
-              await dispatch(markArrival(vehicleNumber)).unwrap();
-              Alert.alert('Success', 'Attendance marked successfully!');
-              // Refresh stats to update the counts
-              await fetchTodayStats();
-            } catch (error) {
-              Alert.alert('Error', error?.message || 'Failed to mark attendance');
-            } finally {
-              setMarkingAttendance(null);
-            }
-          },
-        },
-      ]
-    );
+      },
+    ]);
   };
 
   const renderVehicleItem = ({ item }) => (
     <View style={styles.vehicleCard}>
       <View style={styles.vehicleHeader}>
         <Text style={styles.vehicleNumber}>{item.vehicleNumber}</Text>
-        <View style={[styles.badge, item.vehicleType === 'CAR' ? styles.carBadge : styles.bikeBadge]}>
+        <View
+          style={[styles.badge, item.vehicleType === 'CAR' ? styles.carBadge : styles.bikeBadge]}
+        >
           <Text style={styles.badgeText}>{item.vehicleType}</Text>
         </View>
       </View>
@@ -233,21 +231,15 @@ const HomeScreen = ({ navigation }) => {
           data={searchResults}
           renderItem={renderVehicleItem}
           keyExtractor={(item) => item.id.toString()}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>No vehicles found</Text>
-          }
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+          ListEmptyComponent={<Text style={styles.emptyText}>No vehicles found</Text>}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         />
       )}
 
       {searchQuery.length < 2 && (
         <View style={styles.placeholderContainer}>
           <Ionicons name="search-outline" size={64} color="#D1D5DB" />
-          <Text style={styles.placeholderText}>
-            Search for vehicles by number
-          </Text>
+          <Text style={styles.placeholderText}>Search for vehicles by number</Text>
         </View>
       )}
     </View>

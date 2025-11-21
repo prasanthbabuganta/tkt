@@ -97,9 +97,7 @@ const HistoryScreen = ({ hideHeader = false }) => {
 
       <View style={styles.markedBy}>
         <Ionicons name="person" size={14} color="#9CA3AF" style={{ marginRight: 4 }} />
-        <Text style={styles.markedByText}>
-          Marked by: {item.markedByMobile}
-        </Text>
+        <Text style={styles.markedByText}>Marked by: {item.markedByMobile}</Text>
       </View>
     </View>
   );
@@ -116,10 +114,7 @@ const HistoryScreen = ({ hideHeader = false }) => {
 
       {/* Date Selector */}
       <View style={styles.dateSelector}>
-        <TouchableOpacity
-          style={styles.dateButton}
-          onPress={() => setShowDatePicker(true)}
-        >
+        <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
           <Ionicons name="calendar" size={20} color="#2B2B2B" style={{ marginRight: 12 }} />
           <Text style={styles.dateButtonText}>{formatDate(selectedDate)}</Text>
           <Ionicons name="chevron-down" size={20} color="#2B2B2B" style={{ marginLeft: 12 }} />

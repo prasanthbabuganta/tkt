@@ -139,10 +139,7 @@ const UserManagementScreen = ({ hideHeader = false }) => {
             <Text style={styles.label}>User Role</Text>
             <View style={styles.typeSelector}>
               <TouchableOpacity
-                style={[
-                  styles.typeButton,
-                  role === 'STAFF' && styles.typeButtonActive,
-                ]}
+                style={[styles.typeButton, role === 'STAFF' && styles.typeButtonActive]}
                 onPress={() => setRole('STAFF')}
                 disabled={loading}
               >
@@ -153,20 +150,14 @@ const UserManagementScreen = ({ hideHeader = false }) => {
                   style={{ marginRight: 8 }}
                 />
                 <Text
-                  style={[
-                    styles.typeButtonText,
-                    role === 'STAFF' && styles.typeButtonTextActive,
-                  ]}
+                  style={[styles.typeButtonText, role === 'STAFF' && styles.typeButtonTextActive]}
                 >
                   Staff
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[
-                  styles.typeButton,
-                  role === 'ADMIN' && styles.typeButtonActive,
-                ]}
+                style={[styles.typeButton, role === 'ADMIN' && styles.typeButtonActive]}
                 onPress={() => setRole('ADMIN')}
                 disabled={loading}
               >
@@ -177,10 +168,7 @@ const UserManagementScreen = ({ hideHeader = false }) => {
                   style={{ marginRight: 8 }}
                 />
                 <Text
-                  style={[
-                    styles.typeButtonText,
-                    role === 'ADMIN' && styles.typeButtonTextActive,
-                  ]}
+                  style={[styles.typeButtonText, role === 'ADMIN' && styles.typeButtonTextActive]}
                 >
                   Admin
                 </Text>

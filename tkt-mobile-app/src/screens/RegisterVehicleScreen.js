@@ -27,7 +27,7 @@ const RegisterVehicleScreen = () => {
   const [keyImage, setKeyImage] = useState(null);
 
   const dispatch = useDispatch();
-  const { loading, error, successMessage} = useSelector((state) => state.vehicle);
+  const { loading, error, successMessage } = useSelector((state) => state.vehicle);
 
   useEffect(() => {
     if (successMessage) {
@@ -150,7 +150,7 @@ const RegisterVehicleScreen = () => {
           style: 'cancel',
         },
       ],
-      { cancelable: true }
+      { cancelable: true },
     );
   };
 
@@ -168,10 +168,7 @@ const RegisterVehicleScreen = () => {
     // Indian vehicle number format validation
     const vehiclePattern = /^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{1,4}$/;
     if (!vehicleNumber || !vehiclePattern.test(vehicleNumber)) {
-      Alert.alert(
-        'Invalid Input',
-        'Vehicle number must follow Indian format (e.g., KA01AB1234)'
-      );
+      Alert.alert('Invalid Input', 'Vehicle number must follow Indian format (e.g., KA01AB1234)');
       return false;
     }
 
@@ -189,7 +186,7 @@ const RegisterVehicleScreen = () => {
         vehicleType,
         carImage,
         keyImage,
-      })
+      }),
     );
   };
 
@@ -252,10 +249,7 @@ const RegisterVehicleScreen = () => {
             <Text style={styles.label}>Vehicle Type</Text>
             <View style={styles.typeSelector}>
               <TouchableOpacity
-                style={[
-                  styles.typeButton,
-                  vehicleType === 'CAR' && styles.typeButtonActive,
-                ]}
+                style={[styles.typeButton, vehicleType === 'CAR' && styles.typeButtonActive]}
                 onPress={() => setVehicleType('CAR')}
                 disabled={loading}
               >
@@ -276,10 +270,7 @@ const RegisterVehicleScreen = () => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[
-                  styles.typeButton,
-                  vehicleType === 'BIKE' && styles.typeButtonActive,
-                ]}
+                style={[styles.typeButton, vehicleType === 'BIKE' && styles.typeButtonActive]}
                 onPress={() => setVehicleType('BIKE')}
                 disabled={loading}
               >
@@ -322,7 +313,9 @@ const RegisterVehicleScreen = () => {
               ) : (
                 <View style={styles.placeholderContainer}>
                   <Ionicons name="camera" size={32} color="#6B7280" />
-                  <Text style={styles.placeholderText}>Tap to take photo or select from library</Text>
+                  <Text style={styles.placeholderText}>
+                    Tap to take photo or select from library
+                  </Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -349,7 +342,9 @@ const RegisterVehicleScreen = () => {
               ) : (
                 <View style={styles.placeholderContainer}>
                   <Ionicons name="key" size={32} color="#6B7280" />
-                  <Text style={styles.placeholderText}>Tap to take photo or select from library</Text>
+                  <Text style={styles.placeholderText}>
+                    Tap to take photo or select from library
+                  </Text>
                 </View>
               )}
             </TouchableOpacity>

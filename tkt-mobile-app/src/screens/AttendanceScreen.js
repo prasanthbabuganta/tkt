@@ -23,7 +23,7 @@ import { Ionicons } from '@expo/vector-icons';
 const AttendanceScreen = () => {
   const dispatch = useDispatch();
   const { unmarkedVehicles, loading, error, successMessage } = useSelector(
-    (state) => state.attendance
+    (state) => state.attendance,
   );
   const [refreshing, setRefreshing] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -51,17 +51,13 @@ const AttendanceScreen = () => {
   }, [unmarkedVehicles]);
 
   const handleMarkArrival = (vehicleNumber) => {
-    Alert.alert(
-      'Confirm Arrival',
-      `Mark arrival for vehicle ${vehicleNumber}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Confirm',
-          onPress: () => dispatch(markArrival(vehicleNumber)),
-        },
-      ]
-    );
+    Alert.alert('Confirm Arrival', `Mark arrival for vehicle ${vehicleNumber}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Confirm',
+        onPress: () => dispatch(markArrival(vehicleNumber)),
+      },
+    ]);
   };
 
   const onRefresh = async () => {
@@ -78,17 +74,19 @@ const AttendanceScreen = () => {
     }
 
     const query = searchQuery.toLowerCase();
-    const filtered = unmarkedVehicles.filter(vehicle => {
+    const filtered = unmarkedVehicles.filter((vehicle) => {
       const vehicleNumber = (vehicle.vehicleNumber || '').toLowerCase();
       const ownerName = (vehicle.ownerName || '').toLowerCase();
-      const ownerMobile = (vehicle.ownerMobile || '');
+      const ownerMobile = vehicle.ownerMobile || '';
 
-      return vehicleNumber.includes(query) ||
-        ownerName.includes(query) ||
-        ownerMobile.includes(query);
+      return (
+        vehicleNumber.includes(query) || ownerName.includes(query) || ownerMobile.includes(query)
+      );
     });
-    console.log(`Search query: "${searchQuery}", Found ${filtered.length} vehicles out of ${unmarkedVehicles.length}`,
-      filtered.map(v => v.vehicleNumber));
+    console.log(
+      `Search query: "${searchQuery}", Found ${filtered.length} vehicles out of ${unmarkedVehicles.length}`,
+      filtered.map((v) => v.vehicleNumber),
+    );
     return filtered;
   }, [unmarkedVehicles, searchQuery]);
 
@@ -123,11 +121,9 @@ const AttendanceScreen = () => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Mark Attendance</Text>
         <Text style={styles.headerSubtitle}>
-          {searchQuery ? (
-            `${filteredVehicles.length} of ${unmarkedVehicles.length} vehicle${unmarkedVehicles.length !== 1 ? 's' : ''}`
-          ) : (
-            `${unmarkedVehicles.length} vehicle${unmarkedVehicles.length !== 1 ? 's' : ''} pending`
-          )}
+          {searchQuery
+            ? `${filteredVehicles.length} of ${unmarkedVehicles.length} vehicle${unmarkedVehicles.length !== 1 ? 's' : ''}`
+            : `${unmarkedVehicles.length} vehicle${unmarkedVehicles.length !== 1 ? 's' : ''} pending`}
         </Text>
       </View>
 
@@ -160,9 +156,7 @@ const AttendanceScreen = () => {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="checkmark-done-circle" size={64} color="#10B981" />
-              <Text style={styles.emptyTitle}>
-                {searchQuery ? 'No Results' : 'All Done!'}
-              </Text>
+              <Text style={styles.emptyTitle}>{searchQuery ? 'No Results' : 'All Done!'}</Text>
               <Text style={styles.emptyText}>
                 {searchQuery
                   ? 'No vehicles found matching your search'

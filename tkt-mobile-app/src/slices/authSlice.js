@@ -19,11 +19,9 @@ export const login = createAsyncThunk(
 
       return { user, accessToken, refreshToken };
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Login failed'
-      );
+      return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
-  }
+  },
 );
 
 // Async thunk for logout
@@ -72,7 +70,7 @@ export const restoreSession = createAsyncThunk(
     } catch (error) {
       return rejectWithValue('Failed to restore session');
     }
-  }
+  },
 );
 
 const authSlice = createSlice({

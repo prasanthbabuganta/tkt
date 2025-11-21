@@ -55,7 +55,7 @@ const AdminDashboardScreen = () => {
   useFocusEffect(
     useCallback(() => {
       fetchDashboardData();
-    }, [fetchDashboardData])
+    }, [fetchDashboardData]),
   );
 
   const onRefresh = async () => {

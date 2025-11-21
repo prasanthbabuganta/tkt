@@ -1,12 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  StatusBar,
-  Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Dimensions } from 'react-native';
 import { useSelector } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 import HistoryScreen from './HistoryScreen';
@@ -50,10 +43,7 @@ const MoreScreen = () => {
         {tabs.map((tab) => (
           <TouchableOpacity
             key={tab.key}
-            style={[
-              styles.tabButton,
-              activeTab === tab.key && styles.tabButtonActive,
-            ]}
+            style={[styles.tabButton, activeTab === tab.key && styles.tabButtonActive]}
             onPress={() => setActiveTab(tab.key)}
             activeOpacity={0.7}
           >
@@ -62,12 +52,7 @@ const MoreScreen = () => {
               size={24}
               color={activeTab === tab.key ? '#2B2B2B' : '#9CA3AF'}
             />
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === tab.key && styles.tabTextActive,
-              ]}
-            >
+            <Text style={[styles.tabText, activeTab === tab.key && styles.tabTextActive]}>
               {tab.title}
             </Text>
             {activeTab === tab.key && <View style={styles.activeIndicator} />}
@@ -76,9 +61,7 @@ const MoreScreen = () => {
       </View>
 
       {/* Content */}
-      <View style={styles.content}>
-        {renderContent()}
-      </View>
+      <View style={styles.content}>{renderContent()}</View>
     </View>
   );
 };

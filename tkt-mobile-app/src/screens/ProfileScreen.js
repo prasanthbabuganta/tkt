@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  StatusBar,
-  Alert,
-  Image,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, Image } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { logout } from '../slices/authSlice';
@@ -40,7 +32,7 @@ const ProfileScreen = ({ hideHeader = false }) => {
           },
         },
       ],
-      { cancelable: true }
+      { cancelable: true },
     );
   };
 
@@ -67,7 +59,9 @@ const ProfileScreen = ({ hideHeader = false }) => {
         </View>
 
         <Text style={styles.userName}>{user?.mobileNumber || 'User'}</Text>
-        <View style={[styles.roleBadge, user?.role === 'ADMIN' ? styles.adminBadge : styles.userBadge]}>
+        <View
+          style={[styles.roleBadge, user?.role === 'ADMIN' ? styles.adminBadge : styles.userBadge]}
+        >
           <Text style={styles.roleText}>{user?.role || 'USER'}</Text>
         </View>
       </View>
@@ -109,11 +103,7 @@ const ProfileScreen = ({ hideHeader = false }) => {
 
       {/* Logout Button */}
       <View style={styles.section}>
-        <TouchableOpacity
-          style={styles.logoutButton}
-          onPress={handleLogout}
-          activeOpacity={0.8}
-        >
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} activeOpacity={0.8}>
           <Ionicons name="log-out" size={24} color="#FFFFFF" />
           <Text style={styles.logoutButtonText}>Logout</Text>
         </TouchableOpacity>
